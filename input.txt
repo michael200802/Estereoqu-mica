@@ -1,0 +1,6 @@
+reactivos:
+CO2 
+productos:
+CO2     
+variables:
+1 0.5 mol
