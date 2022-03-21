@@ -4,4 +4,4 @@
 
 int start_app(void);
 
-void exit_app(const char * MBTitle, const char * MBMsg);
+void msg_app(const char * MBTitle, const char * MBMsg);

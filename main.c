@@ -6,7 +6,7 @@ int main(void)
     int exitv = start_app();
     if(exitv == EXIT_FAILURE)
     {
-        exit_app("Error","Se le comunicara el error al Michu.");
+        msg_app("Error","Se le comunicara el error al Michu.");
         //codigo para mandar el error xd
     }
 
@@ -15,6 +15,6 @@ int main(void)
         
     }
 
-    exit_app("Vuelva pronto,","Adios.");
+    msg_app("Vuelva pronto,","Adios.");
     return exitv;
 }
