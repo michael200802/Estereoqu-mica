@@ -1,0 +1,7 @@
+#pragma once
+
+#define MAXLEN_OF_SYMBOL 2
+
+#define MAXNUMBER_OF_OXISTATES 8
+
+#define NUMBER_OF_ELEMENTS 118
