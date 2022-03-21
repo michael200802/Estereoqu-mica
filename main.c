@@ -16,5 +16,5 @@ int main(void)
     }
 
     msg_app("Vuelva pronto,","Adios.");
-    return exitv;
+    return end_app();
 }

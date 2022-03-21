@@ -138,6 +138,19 @@ int start_app(void)
     return EXIT_SUCCESS;
 }
 
+int end_app(void)
+{
+    if(
+        pthread_mutex_destroy(&input_mutex) == -1
+        ||
+        pthread_cond_destroy(&input_condv) == -1
+    )
+    {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
 void msg_app(const char * MBTitle, const char * MBMsg)
 {
     MessageBox(HWND_DESKTOP,MBMsg,MBTitle,MB_OK|MB_ICONINFORMATION|MB_DEFBUTTON1|MB_SYSTEMMODAL);
@@ -269,14 +282,6 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             GUI_state = GUI_STATE_INITIALIZED;
             sem_post(app_loop_sem);
         }    
-        break;
-    case WM_DESTROY:
-        {
-            pthread_mutex_destroy(&input_mutex);
-            pthread_cond_destroy(&input_condv);
-
-            PostQuitMessage(0);
-        }
         break;
     default:
         return DefWindowProc(hWnd,Msg,wParam,lParam);

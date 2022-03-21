@@ -2,6 +2,7 @@ compiler=x86_64-w64-mingw32-gcc
 
 clean: *.o
 	rm *.o
+	rm GUI/*.o
 
 GUI/WIN.o: GUI/WIN.c GUI/GUI.h
 	$(compiler) -c GUI/WIN.c -o $@
