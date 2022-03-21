@@ -10,4 +10,4 @@ main.o: main.c GUI/GUI.h
 	$(compiler) -c main.c -o $@
 
 wmain.exe: main.o GUI/WIN.o
-	$(compiler) -pthread --static $? -o $@
+	$(compiler) -mwindows -pthread --static $? -o $@

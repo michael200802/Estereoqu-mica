@@ -11,23 +11,39 @@
 #define MAIN_WND_CLASSNAME "MAINWND"
 
 //child-window identifiers
-#define EDIT_EQUATION_ID (HMENU)1
-#define STATIC_EQUATION_TITLE_ID (HMENU)2
-#define EDIT_RESULT_ID (HMENU)3
-#define EDT_RESULT_TITLE_ID (HMENU)4
+#define EDIT_REACTANTS_ID (HMENU)1
+#define STATIC_REACTANTS_TITLE_ID (HMENU)2
+#define EDIT_PRODUCTS_ID (HMENU)3
+#define STATIC_PRODUCTS_TITLE_ID (HMENU)4
 
 //size of controls
 #define LINE_HEIGHT 20
-#define EDIT_EQUATION_WIDTH 1300
-#define EDIT_EQUATION_HEIGHT LINE_HEIGHT
-#define EDIT_RESULT_WIDTH EDIT_EQUATION_WIDTH
-#define EDIT_RESULT_HEIGHT LINE_HEIGHT*3
+
+#define EDIT_REACTANTS_WIDTH 1300
+#define EDIT_REACTANTS_HEIGHT LINE_HEIGHT
+
+#define STATIC_REACTANTS_TITLE_WIDTH 70
+#define STATIC_REACTANTS_TITLE_HEIGHT LINE_HEIGHT
+
+#define EDIT_PRODUCTS_WIDTH EDIT_REACTANTS_WIDTH
+#define EDIT_PRODUCTS_HEIGHT LINE_HEIGHT
+
+#define STATIC_PRODUCTS_TITLE_WIDTH 70
+#define STATIC_PRODUCTS_TITLE_HEIGHT LINE_HEIGHT
 
 //pos of controls
-#define EDIT_EQUATION_X 20
-#define EDIT_EQUATION_Y 20
-#define EDIT_RESULT_X EDIT_EQUATION_X
-#define EDIT_RESULT_Y EDIT_EQUATION_Y+100
+#define EDIT_REACTANTS_X 20
+#define EDIT_REACTANTS_Y 50
+
+#define STATIC_REACTANTS_TITLE_X EDIT_REACTANTS_X
+#define STATIC_REACTANTS_TITLE_Y EDIT_REACTANTS_Y-LINE_HEIGHT
+
+#define EDIT_PRODUCTS_X EDIT_REACTANTS_X
+#define EDIT_PRODUCTS_Y EDIT_REACTANTS_Y+STATIC_REACTANTS_TITLE_HEIGHT+LINE_HEIGHT+10
+
+#define STATIC_PRODUCTS_TITLE_X EDIT_PRODUCTS_X
+#define STATIC_PRODUCTS_TITLE_Y EDIT_PRODUCTS_Y-LINE_HEIGHT
+
 
 //mutex and cond for input
 pthread_mutex_t input_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -72,8 +88,8 @@ int start_app(void)
         .cbWndExtra = 0,
         .hInstance = NULL,
         .hIcon = LoadIcon(NULL,IDI_APPLICATION),
-        .hCursor = LoadIcon(NULL,IDC_ARROW),
-        .hbrBackground = (HBRUSH)COLOR_APPWORKSPACE,
+        .hCursor = LoadCursor(NULL,IDC_ARROW),
+        .hbrBackground = GetStockObject(GRAY_BRUSH),
         .lpszMenuName = NULL,
         .lpszClassName = MAIN_WND_CLASSNAME,
         .hIconSm = NULL
@@ -131,10 +147,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
     static HINSTANCE hInstance;
 
-    static HWND hedit_equation;
-    static HWND hedit_result;
-    static HWND hstatic_equation_title;
-    static HWND hstatic_result_title;
+    static HWND hedit_reactants;
+    static HWND hedit_products;
+    static HWND hstatic_reactants_title;
+    static HWND hstatic_products_title;
 
     switch (Msg)
     {
@@ -146,22 +162,22 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 
             hInstance = ((CREATESTRUCT*)lParam)->hInstance;
 
-            hedit_equation = CreateWindowEx
+            hedit_reactants = CreateWindowEx
                 (
                     0,
                     WC_EDIT,
                     "",
-                    WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_BORDER|WS_TABSTOP|ES_CENTER,
-                    EDIT_EQUATION_X,
-                    EDIT_EQUATION_Y,
-                    EDIT_EQUATION_WIDTH,
-                    EDIT_EQUATION_HEIGHT,
+                    WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_BORDER|ES_CENTER,
+                    EDIT_REACTANTS_X,
+                    EDIT_REACTANTS_Y,
+                    EDIT_REACTANTS_WIDTH,
+                    EDIT_REACTANTS_HEIGHT,
                     hWnd,
-                    EDIT_EQUATION_ID,
+                    EDIT_REACTANTS_ID,
                     hInstance,
                     NULL
                 );
-            if(hedit_equation == NULL)
+            if(hedit_reactants == NULL)
             {
                 GUI_state = GUI_STATE_ERROR_CANNOT_INIT_CREATEWINDOW_FAILED;
                 if(sem_post(app_loop_sem) == -1)
@@ -172,22 +188,74 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
 
-            hedit_result = CreateWindowEx
+            hstatic_reactants_title = CreateWindowEx
+                (
+                    0,
+                    WC_STATIC,
+                    "Reactivos",
+                    WS_CHILD|WS_VISIBLE|WS_BORDER|WS_OVERLAPPED|SS_LEFT,
+                    STATIC_REACTANTS_TITLE_X,
+                    STATIC_REACTANTS_TITLE_Y,
+                    STATIC_PRODUCTS_TITLE_WIDTH,
+                    STATIC_PRODUCTS_TITLE_HEIGHT,
+                    hWnd,
+                    STATIC_REACTANTS_TITLE_ID,
+                    hInstance,
+                    NULL
+                );
+            if(hstatic_reactants_title == NULL)
+            {
+                GUI_state = GUI_STATE_ERROR_CANNOT_INIT_CREATEWINDOW_FAILED;
+                if(sem_post(app_loop_sem) == -1)
+                {
+                    msg_app("Error critico:","sem_post() fallo.");
+                    exit(EXIT_FAILURE);
+                }
+                return 0;
+            }
+
+            hedit_products = CreateWindowEx
                 (
                     0,
                     WC_EDIT,
                     "",
-                    WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_HSCROLL|WS_BORDER|ES_LEFT|ES_READONLY|ES_MULTILINE,
-                    EDIT_RESULT_X,
-                    EDIT_RESULT_Y,
-                    EDIT_RESULT_WIDTH,
-                    EDIT_RESULT_HEIGHT,
+                    WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_BORDER|ES_CENTER,
+                    EDIT_PRODUCTS_X,
+                    EDIT_PRODUCTS_Y,
+                    EDIT_PRODUCTS_WIDTH,
+                    EDIT_PRODUCTS_HEIGHT,
                     hWnd,
-                    EDIT_RESULT_ID,
+                    EDIT_PRODUCTS_ID,
                     hInstance,
                     NULL
                 );
-            if(hedit_result == NULL)
+            if(hedit_products == NULL)
+            {
+                GUI_state = GUI_STATE_ERROR_CANNOT_INIT_CREATEWINDOW_FAILED;
+                if(sem_post(app_loop_sem) == -1)
+                {
+                    msg_app("Error critico:","sem_post() fallo.");
+                    exit(EXIT_FAILURE);
+                }
+                return 0;
+            }
+
+            hstatic_products_title = CreateWindowEx
+                (
+                    0,
+                    WC_STATIC,
+                    "Productos",
+                    WS_CHILD|WS_VISIBLE|WS_BORDER|WS_OVERLAPPED|SS_LEFT,
+                    STATIC_PRODUCTS_TITLE_X,
+                    STATIC_PRODUCTS_TITLE_Y,
+                    STATIC_PRODUCTS_TITLE_WIDTH,
+                    STATIC_PRODUCTS_TITLE_HEIGHT,
+                    hWnd,
+                    STATIC_PRODUCTS_TITLE_ID,
+                    hInstance,
+                    NULL
+                );
+            if(hstatic_products_title == NULL)
             {
                 GUI_state = GUI_STATE_ERROR_CANNOT_INIT_CREATEWINDOW_FAILED;
                 if(sem_post(app_loop_sem) == -1)
@@ -203,10 +271,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         }    
         break;
     case WM_DESTROY:
-        pthread_mutex_destroy(&input_mutex);
-        pthread_cond_destroy(&input_condv);
+        {
+            pthread_mutex_destroy(&input_mutex);
+            pthread_cond_destroy(&input_condv);
 
-        PostQuitMessage(0);
+            PostQuitMessage(0);
+        }
         break;
     default:
         return DefWindowProc(hWnd,Msg,wParam,lParam);
