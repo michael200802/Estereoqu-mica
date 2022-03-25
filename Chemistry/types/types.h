@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #define MAXLEN_OF_SYMBOL 2
 
@@ -8,57 +9,61 @@
 
 #define NUMBER_OF_ELEMENTS 118
 
-typedef double num_t;
+//id of an elem
+typedef char atomic_num_t;
 
-typedef struct
-{
-    char n;
-    char states[MAXNUMBER_OF_OXISTATES];
-}oxistates_t;
-
+//str of 3 characters that stores a symbol
+//this symbol is the simbol of an element
+//it is a struct because we want to copy the contents of its instances easily
 typedef struct
 {
     char symbol[MAXLEN_OF_SYMBOL+1];
-    oxistates_t oxistates;
-    num_t mass;
-    num_t mol;
-}element_t;
+}elem_symbol_t;
+
+//oxistate of a compound
+//an element cannot have a current oxistate 
+typedef char oxistate_t;
+
+#define UNKNOWN_OXISTATE 0
 
 typedef struct
 {
-    size_t size;
-    element_t * array;
-}element_array_t;
+    unsigned char n;
+    oxistate_t states[MAXNUMBER_OF_OXISTATES];
+}oxistates_t;
 
+//real number
+typedef double num_t;
+
+//just an element
 typedef struct
 {
-    element_array_t elemsarr;
-    num_t mol;
-    num_t pm;
-    char * name;
-}compound_t;
+    atomic_num_t atomic_num;
+    elem_symbol_t symbol;
+    num_t molar_mass;
+    oxistates_t possible_oxistates;
+}elem_t;
 
+//substance
+//it can be a  complex substance (it is composed of other substances) or a simple substance
 typedef struct
 {
-    size_t size;
-    compound_t * array;
-}compound_array_t;
+    size_t amount;//amount of substance
 
-typedef struct
-{
-    compound_array_t reactants;
+    oxistate_t cur_oxistate;
 
-    compound_array_t products;
+    bool is_simple_substance;
 
-    char * str;
+    union
+    {
+        elem_t elem;//simple substance
 
-}reaction_t;
+        struct
+        {
+            size_t nmolecules;
+            molecule_t * molecules;
+        }compound;//complex substance
 
-typedef struct
-{
-    size_t nreactants;
-    compound_t * reactants;
+    }substance;
 
-    size_t nproducts;
-    compound_t * products;
-}variables_t;
+}molecule_t;
