@@ -9,5 +9,5 @@ inline num_t get_uma(atomic_num_t atomic_num)
     {
         return -1;
     }
-    return uma_table[atomic_num].mass;
+    return uma_table[atomic_num-1].mass;
 }

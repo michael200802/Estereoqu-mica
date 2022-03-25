@@ -11,5 +11,5 @@ inline oxistates_t get_oxistates(atomic_num_t atomic_num)
         oxistates_t err = {.n = -1};
         return err;
     }
-    return oxistates_table[atomic_num].states;
+    return oxistates_table[atomic_num-1].states;
 }
