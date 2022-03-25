@@ -46,7 +46,7 @@ typedef struct
 
 //substance
 //it can be a complex substance (it is composed of other substances) or a simple substance
-typedef struct molecule_t
+typedef struct substance_t
 {
     size_t amount;//amount of substance
 
@@ -61,9 +61,9 @@ typedef struct molecule_t
         struct
         {
             size_t nmolecules;
-            struct molecule_t * molecules;
+            struct substance_t * molecules;
         }compound;//complex substance
 
     }substance;
 
-}molecule_t;
+}substance_t;
