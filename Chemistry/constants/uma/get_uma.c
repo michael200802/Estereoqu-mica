@@ -3,14 +3,11 @@
 
 #include "table.h"
 
-inline num_t get_uma(const char * str)
+inline num_t get_uma(atomic_num_t atomic_num)
 {
-    for (size_t i = 0; i < NUMBER_OF_ELEMENTS; i++)
+    if(atomic_num < 1 || atomic_num > NUMBER_OF_ELEMENTS)
     {
-        if(strcmp(uma_table[i].symbol,str) == 0)
-        {
-            return uma_table[i].mass;
-        }
+        return -1;
     }
-    return -1;
+    return uma_table[atomic_num].mass;
 }
