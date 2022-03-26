@@ -48,11 +48,11 @@ typedef struct
 //it can be a complex substance (it is composed of other substances) or a simple substance
 typedef struct substance_t
 {
-    size_t amount;//amount of substance
+    size_t amount;//amount of substance (it is not in mol, it just the amount of substance)
 
-    oxistate_t cur_oxistate;
+    //oxistate_t cur_oxistate;//current charge of the subtance (oxistates total between its components)
 
-    bool is_simple_substance;
+    bool is_simple_substance;//simple substance (just one element) or complex substance (union of more than one element == union of substances)
 
     union
     {
@@ -60,10 +60,16 @@ typedef struct substance_t
 
         struct
         {
-            size_t nmolecules;
-            struct substance_t * molecules;
+            size_t nsubstances;
+            struct substance_t * substances;
         }compound;//complex substance
 
     }substance;
 
+    num_t mass;//total mass (g)
+
+
+
 }substance_t;
+
+
