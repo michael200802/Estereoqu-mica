@@ -12,6 +12,10 @@ inline bool init_elem_symbol(const char * const restrict symbol, elem_symbol_t *
         {
             elem_symbol->symbol[1] = symbol[1];
         }
+        if(get_atomicnum(*elem_symbol) == -1)
+        {
+            return false;
+        }
         return true;
     }
     else
