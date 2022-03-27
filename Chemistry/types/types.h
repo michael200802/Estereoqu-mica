@@ -48,7 +48,7 @@ typedef struct
 //it can be a complex substance (it is composed of other substances) or a simple substance
 typedef struct substance_t
 {
-    size_t amount;//amount of substance (it is not in mol, it just the amount of substance)
+    size_t amount;//amount of substance (it is not in mol, it is just the amount of the substance)
 
     //oxistate_t cur_oxistate;//current charge of the subtance (oxistates total between its components)
 
@@ -66,9 +66,7 @@ typedef struct substance_t
 
     }substance;
 
-    num_t mass;//total mass (g)
-
-
+    num_t molar_mass;//molar mass of the substance (g/mol) 
 
 }substance_t;
 

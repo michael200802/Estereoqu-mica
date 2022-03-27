@@ -6,7 +6,8 @@ clean: *.o
 	rm -r Chemistry/constants/uma/*.o
 	rm -r Chemistry/constants/oxistates/*.o
 	rm -r Chemistry/constants/atomicnum/*.o
-	rm -r Chemistry/types/*.o
+	rm -r Chemistry/types/elem/*.o
+	rm -r Chemistry/types/substance/*.o
 	rm GUI/*.o
 
 #constants--------------------------------------------------
@@ -25,11 +26,18 @@ constants_objf=Chemistry/constants/atomicnum/get_atomicnum.o Chemistry/constants
 
 #types------------------------------------------------------
 
-Chemistry/types/constructors.o: Chemistry/types/constructors.h Chemistry/types/constructors.c
-	$(compiler) -c Chemistry/types/constructors.c -o $@
+Chemistry/types/elem/elem.o: Chemistry/types/elem/elem.h Chemistry/types/elem/elem.c
+	$(compiler) -c Chemistry/types/elem/elem.c -o $@
 
-test_elem: test_elem.c Chemistry/types/constructors.o $(constants_objf)
+Chemistry/types/substance/substance.o: Chemistry/types/substance/substance.c Chemistry/types/substance/substance.h Chemistry/types/elem/elem.c
+	$(compiler) -c Chemistry/types/substance/substance.c -o $@
+
+test_elem: test_elem.c Chemistry/types/elem/elem.o $(constants_objf)
 	$(compiler) $? -o $@
+
+test_substance: test_substance.c Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
+	$(compiler) $? -o $@
+
 
 #types------------------------------------------------------
 
