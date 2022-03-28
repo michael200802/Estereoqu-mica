@@ -123,5 +123,5 @@ struct
 	"Mc",
 	"Lv",
 	"Ts",
-	"Og",
+	"Og"
 };

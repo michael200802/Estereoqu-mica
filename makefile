@@ -11,13 +11,16 @@ clean: *.o
 	rm GUI/*.o
 
 #constants--------------------------------------------------
-Chemistry/constants/atomicnum/get_atomicnum.o: Chemistry/constants/atomicnum/get_atomicnum.h Chemistry/constants/atomicnum/get_atomicnum.c
+Chemistry/constants/atomicnum/get_atomicnum.o: Chemistry/constants/atomicnum/get_atomicnum.h Chemistry/constants/atomicnum/get_atomicnum.c Chemistry/constants/atomicnum/table.h
+	python Chemistry/constants/atomicnum/getatomicnum.py
 	$(compiler) -c Chemistry/constants/atomicnum/get_atomicnum.c -o $@
 
-Chemistry/constants/oxistates/get_oxistates.o: Chemistry/constants/oxistates/get_oxistates.c Chemistry/constants/oxistates/get_oxistates.h
+Chemistry/constants/oxistates/get_oxistates.o: Chemistry/constants/oxistates/get_oxistates.c Chemistry/constants/oxistates/get_oxistates.h Chemistry/constants/oxistates/table.h
+	python Chemistry/constants/oxistates/getoxistates.py
 	$(compiler) -c Chemistry/constants/oxistates/get_oxistates.c -o $@
 
-Chemistry/constants/uma/get_uma.o: Chemistry/constants/uma/get_uma.c Chemistry/constants/uma/get_uma.h
+Chemistry/constants/uma/get_uma.o: Chemistry/constants/uma/get_uma.c Chemistry/constants/uma/get_uma.h Chemistry/constants/uma/table.h Chemistry/constants/uma/getuma.py
+	python Chemistry/constants/uma/getuma.py
 	$(compiler) -c Chemistry/constants/uma/get_uma.c -o $@
 
 constants_objf=Chemistry/constants/atomicnum/get_atomicnum.o Chemistry/constants/oxistates/get_oxistates.o Chemistry/constants/uma/get_uma.o

@@ -1,6 +1,9 @@
 from mendeleev import element
+import os
 
-file = open("table.h","w")
+path = os.path.realpath(__file__).split("/getatomicnum.py").pop(0)
+
+file = open(path + "/table.h","w")
 
 header  = '\n'
 header += '#include "../../types/types.h"\n'
