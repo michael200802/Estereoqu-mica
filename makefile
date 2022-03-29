@@ -8,19 +8,20 @@ clean: *.o
 	rm -r Chemistry/constants/atomicnum/*.o
 	rm -r Chemistry/types/elem/*.o
 	rm -r Chemistry/types/substance/*.o
+	rm -r Chemistry/types/reaction/*.o
 	rm GUI/*.o
 
 #constants--------------------------------------------------
 Chemistry/constants/atomicnum/get_atomicnum.o: Chemistry/constants/atomicnum/get_atomicnum.h Chemistry/constants/atomicnum/get_atomicnum.c Chemistry/constants/atomicnum/table.h
-	python Chemistry/constants/atomicnum/getatomicnum.py
+#	python Chemistry/constants/atomicnum/getatomicnum.py
 	$(compiler) -c Chemistry/constants/atomicnum/get_atomicnum.c -o $@
 
 Chemistry/constants/oxistates/get_oxistates.o: Chemistry/constants/oxistates/get_oxistates.c Chemistry/constants/oxistates/get_oxistates.h Chemistry/constants/oxistates/table.h
-	python Chemistry/constants/oxistates/getoxistates.py
+#	python Chemistry/constants/oxistates/getoxistates.py
 	$(compiler) -c Chemistry/constants/oxistates/get_oxistates.c -o $@
 
 Chemistry/constants/uma/get_uma.o: Chemistry/constants/uma/get_uma.c Chemistry/constants/uma/get_uma.h Chemistry/constants/uma/table.h Chemistry/constants/uma/getuma.py
-	python Chemistry/constants/uma/getuma.py
+#	python Chemistry/constants/uma/getuma.py
 	$(compiler) -c Chemistry/constants/uma/get_uma.c -o $@
 
 constants_objf=Chemistry/constants/atomicnum/get_atomicnum.o Chemistry/constants/oxistates/get_oxistates.o Chemistry/constants/uma/get_uma.o
@@ -35,12 +36,17 @@ Chemistry/types/elem/elem.o: Chemistry/types/elem/elem.h Chemistry/types/elem/el
 Chemistry/types/substance/substance.o: Chemistry/types/substance/substance.c Chemistry/types/substance/substance.h Chemistry/types/elem/elem.c
 	$(compiler) -c Chemistry/types/substance/substance.c -o $@
 
+Chemistry/types/reaction/reaction.o: Chemistry/types/reaction/reaction.c Chemistry/types/reaction/reaction.h
+	$(compiler) -c Chemistry/types/reaction/reaction.c -o $@
+
 test_elem: test_elem.c Chemistry/types/elem/elem.o $(constants_objf)
 	$(compiler) $? -o $@
 
 test_substance: test_substance.c Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
 	$(compiler) $? -o $@
 
+test_reaction: test_reaction.c Chemistry/types/reaction/reaction.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
+	$(compiler) $? -o $@
 
 #types------------------------------------------------------
 
