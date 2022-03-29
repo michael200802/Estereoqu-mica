@@ -31,72 +31,6 @@ static inline size_t read_uint(const char * restrict str, const char ** restrict
     return result;
 }
 
-static inline bool is_str_substance(const char * restrict str)
-{
-    //do pairs of brackets () match?
-    {
-        size_t alone = 0;
-        for (size_t i = 0; str[i] != '\0'; i++)
-        {
-            switch (str[i])
-            {
-            case '(':
-                alone++;
-                if(str[i+1] == ')')//there must not be an empty pair "()" 
-                {
-                    return false;
-                }
-                break;
-            case ')':
-                if(alone == 0)
-                {
-                    return false;
-                }
-                alone--;
-                break;
-            }
-        }
-    }
-
-    while(isdigit(*str))
-    {
-        str++;
-    }
-
-    while (*str != '\0')
-    {
-        switch (*str)
-        {
-            case '(':
-                do
-                {
-                    str++;
-                } while (*str == '(');
-                
-            default:
-                elem_symbol_t sym;
-                if(init_elem_symbol(str,&sym) == false)
-                {
-                    return false;
-                }
-                if(get_symbol_len(sym) == 2)
-                {
-                    str++;
-                }
-
-            case ')':
-                str++;
-                while(isdigit(*str))
-                {
-                    str++;
-                }
-        }
-    }
-    
-
-    return true;
-}
-
 static inline void _init_substance(const char * str, const char * endstr, substance_t * const restrict sub)
 {
     //get the number of substances
@@ -131,6 +65,7 @@ static inline void _init_substance(const char * str, const char * endstr, substa
         }
     }
 
+    /*
     printf("%zu: ",nsubstances);
 
     for(size_t i = 0; str+i != endstr; i++)
@@ -138,6 +73,7 @@ static inline void _init_substance(const char * str, const char * endstr, substa
         putchar(str[i]);
     }
     putchar('\n');
+    */
 
     //fill/read
     if(nsubstances == 1)
@@ -263,7 +199,7 @@ static inline void _init_substance(const char * str, const char * endstr, substa
     }
 }
 
-bool init_substance(const char * str, substance_t * const restrict sub)
+inline bool init_substance(const char * str, substance_t * const restrict sub)
 {
     if(is_str_substance(str) == false)
     {
@@ -287,6 +223,72 @@ bool init_substance(const char * str, substance_t * const restrict sub)
     _init_substance(str,end,sub->substance.compound.substances);
 
     sub->molar_mass = sub->substance.compound.substances->molar_mass * sub->substance.compound.substances->amount;
+
+    return true;
+}
+
+inline bool is_str_substance(const char * restrict str)
+{
+    //do pairs of brackets () match?
+    {
+        size_t alone = 0;
+        for (size_t i = 0; str[i] != '\0'; i++)
+        {
+            switch (str[i])
+            {
+            case '(':
+                alone++;
+                if(str[i+1] == ')')//there must not be an empty pair "()" 
+                {
+                    return false;
+                }
+                break;
+            case ')':
+                if(alone == 0)
+                {
+                    return false;
+                }
+                alone--;
+                break;
+            }
+        }
+    }
+
+    while(isdigit(*str))
+    {
+        str++;
+    }
+
+    while (*str != '\0')
+    {
+        switch (*str)
+        {
+            case '(':
+                do
+                {
+                    str++;
+                } while (*str == '(');
+                
+            default:
+                elem_symbol_t sym;
+                if(init_elem_symbol(str,&sym) == false)
+                {
+                    return false;
+                }
+                if(get_symbol_len(sym) == 2)
+                {
+                    str++;
+                }
+
+            case ')':
+                str++;
+                while(isdigit(*str))
+                {
+                    str++;
+                }
+        }
+    }
+    
 
     return true;
 }
@@ -393,7 +395,7 @@ size_t _print_substance(const substance_t * const restrict sub, char * buffer, s
     return buffer_len;
 }
 
-bool print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len)
+inline bool print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len)
 {
     size_t printsizer;
 
@@ -409,7 +411,69 @@ bool print_substance(const substance_t * const restrict sub, char * buffer, size
     return _print_substance(sub->substance.compound.substances,buffer,buffer_len-printsizer);
 }
 
-void destroy_substance(substance_t * const restrict sub)
+static inline void _get_components_of_substance(const substance_t * const restrict sub, components_of_substance_t * const restrict comp, size_t multiplier)
+{
+    if(sub->is_simple_substance)
+    {
+        comp->bucket[sub->substance.elem.atomic_num] += 1*sub->amount*multiplier;
+    }
+    else
+    {
+        for(size_t i = 0; i < sub->substance.compound.nsubstances; i++)
+        {
+            _get_components_of_substance(&sub->substance.compound.substances[i],comp,sub->amount*multiplier);
+        }
+    }
+}
+
+inline void get_components_of_substance(const substance_t * const restrict sub, components_of_substance_t * const restrict comp)
+{
+    *comp = (components_of_substance_t){};
+    _get_components_of_substance(sub,comp,1);
+}
+
+inline void sum_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2, components_of_substance_t * const result)
+{
+    for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)
+    {
+        result->bucket[i] = comp1->bucket[i] + comp2->bucket[i];
+    }
+}
+
+inline bool compare_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2)
+{
+    for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)
+    {
+        if(comp1->bucket[i] != comp2->bucket[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+//unused
+inline long long get_nelems_in_substance(const substance_t * const restrict sub, const elem_symbol_t elem)
+{
+    if(sub->is_simple_substance)
+    {
+        if(compare_elem_symbols(sub->substance.elem.symbol,elem))
+        {
+            return 1*sub->amount;
+        }
+        return 0;
+    }
+
+    long long count = 0;
+    for(size_t i = 0; i < sub->substance.compound.nsubstances; i++)
+    {
+        count += get_nelems_in_substance(&sub->substance.compound.substances[i],elem);
+    }
+
+    return count*sub->amount;
+}
+
+inline void destroy_substance(substance_t * const restrict sub)
 {
     if(sub->is_simple_substance == false)
     {

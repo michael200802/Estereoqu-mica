@@ -70,4 +70,21 @@ typedef struct substance_t
 
 }substance_t;
 
+//stores the number of atoms of each element in a substance
+typedef struct
+{
+    size_t bucket[NUMBER_OF_ELEMENTS+1];//the index of an element is its atomic number
+}components_of_substance_t;
+
+//chemical reaction
+typedef struct
+{
+    struct
+    {
+        size_t nsubstances;
+        substance_t * substances;
+    }
+    reactives,//substances set number 1
+    products;//substances set number 2
+}reaction_t;
 
