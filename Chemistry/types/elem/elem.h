@@ -10,6 +10,9 @@
 
 extern bool init_elem_symbol(const char * const restrict symbol, elem_symbol_t * const restrict elem_symbol);
 
+#define compare_elem_symbols(sym1, sym2)\
+    (sym1.symbol[0] == sym2.symbol[0] && sym1.symbol[1] == sym2.symbol[1])
+
 #define get_symbol_len(_symbol)\
     (_symbol.symbol[1] == '\0' ? 1 : 2)
 

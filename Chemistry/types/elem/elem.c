@@ -2,7 +2,7 @@
 
 inline bool init_elem_symbol(const char * const restrict symbol, elem_symbol_t * const restrict elem_symbol)
 {
-    *elem_symbol = (elem_symbol_t){};
+    *elem_symbol = (elem_symbol_t){};//all to zero
 
     if(isupper(symbol[0]))
     {
