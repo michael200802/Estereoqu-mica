@@ -13,7 +13,8 @@
 
 extern bool init_substance(const char * str, substance_t * const restrict sub);
 
-extern bool is_str_substance(const char * restrict str);
+#define IS_STR_SUBSTANCE_UNKNOWN_LEN -1
+extern bool is_str_substance(const char * restrict str, ssize_t len);
 
 extern bool print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len);
 

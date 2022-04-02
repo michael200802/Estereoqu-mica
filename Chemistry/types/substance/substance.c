@@ -201,7 +201,7 @@ static inline void _init_substance(const char * str, const char * endstr, substa
 
 inline bool init_substance(const char * str, substance_t * const restrict sub)
 {
-    if(is_str_substance(str) == false)
+    if(is_str_substance(str,IS_STR_SUBSTANCE_UNKNOWN_LEN) == false)
     {
         return false;
     }
@@ -227,39 +227,74 @@ inline bool init_substance(const char * str, substance_t * const restrict sub)
     return true;
 }
 
-inline bool is_str_substance(const char * restrict str)
+inline bool is_str_substance(const char * restrict str, ssize_t len)
 {
     //do pairs of brackets () match?
     {
         size_t alone = 0;
-        for (size_t i = 0; str[i] != '\0'; i++)
+        size_t i = 0;
+
+        if(len < 0)
         {
-            switch (str[i])
+            for (; str[i] != '\0'; i++)
             {
-            case '(':
-                alone++;
-                if(str[i+1] == ')')//there must not be an empty pair "()" 
+                switch (str[i])
                 {
-                    return false;
+                case '(':
+                    alone++;
+                    if(str[i+1] == ')')//there must not be an empty pair "()" 
+                    {
+                        return false;
+                    }
+                    break;
+                case ')':
+                    if(alone == 0)
+                    {
+                        return false;
+                    }
+                    alone--;
+                    break;
                 }
-                break;
-            case ')':
-                if(alone == 0)
-                {
-                    return false;
-                }
-                alone--;
-                break;
             }
+            len = i;
+        }
+        else
+        {
+            for (; i < len; i++)
+            {
+                switch (str[i])
+                {
+                case '(':
+                    alone++;
+                    if(str[i+1] == ')')//there must not be an empty pair "()" 
+                    {
+                        return false;
+                    }
+                    break;
+                case ')':
+                    if(alone == 0)
+                    {
+                        return false;
+                    }
+                    alone--;
+                    break;
+                }
+            }
+        }
+
+        if(alone != 0 || len == 0)
+        {
+            return false;
         }
     }
 
     while(isdigit(*str))
     {
         str++;
+        len--;
     }
 
-    while (*str != '\0')
+    while (len != 0)
     {
         switch (*str)
         {
@@ -267,6 +302,7 @@ inline bool is_str_substance(const char * restrict str)
                 do
                 {
                     str++;
+                    len--;
                 } while (*str == '(');
                 
             default:
@@ -278,13 +314,16 @@ inline bool is_str_substance(const char * restrict str)
                 if(get_symbol_len(sym) == 2)
                 {
                     str++;
+                    len--;
                 }
 
             case ')':
                 str++;
+                len--;
                 while(isdigit(*str))
                 {
                     str++;
+                    len--;
                 }
         }
     }
