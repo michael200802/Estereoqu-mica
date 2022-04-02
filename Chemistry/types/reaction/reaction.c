@@ -2,52 +2,119 @@
 
 bool init_reaction(const char * restrict _reactives, const char * restrict _products, reaction_t * restrict const react)
 {
+    size_t nreactives = 0;
+    size_t nproducts = 0;
+    {
+        size_t i;
+
+        i = 0;
+        while(isspace(*_reactives))
+        {
+            _reactives++;
+        }
+        while(_reactives[i] != '\0')
+        {
+            {
+                size_t substance_index = i;
+
+                while(isspace(_reactives[i]) == 0 && _reactives[i] != '+' && _reactives[i] != '\0')
+                {
+                    i++;
+                }
+
+                if(is_str_substance(&_reactives[substance_index],i-substance_index) == false)
+                {
+                    return false;
+                }
+
+                nreactives++;
+            }
+
+            switch(_reactives[i])
+            {
+                case ' ':
+                    while(isspace(_reactives[i]))
+                    {
+                        i++;
+                    }
+                    if(_reactives[i] != '+')
+                    {
+                        if(_reactives[i] == '\0')
+                        {
+                            continue;
+                        }
+                        return false;
+                    }
+
+                case '+':
+                    i++;
+                    while(isspace(_reactives[i]))
+                    {
+                        i++;
+                    }
+                    if(_reactives[i] == '+' || _reactives[i] == '\0')
+                    {
+                        return false;
+                    }
+
+            }
+        }
+
+        i = 0;
+        while(isspace(*_products))
+        {
+            _products++;
+        }
+        while(_products[i] != '\0')
+        {
+            {
+                size_t substance_index = i;
+
+                while(_products[i] != '+' && isspace(_products[i]) == 0 && _products[i] != '\0')
+                {
+                    i++;
+                }
+
+                if(is_str_substance(&_products[substance_index],i-substance_index) == false)
+                {
+                    return false;
+                }
+                nproducts++;
+            }
+            switch (_products[i])
+            {
+                case ' ':
+                    while(isspace(_products[i]))
+                    {
+                        i++;
+                    }
+                    if(_products[i] != '+')
+                    {
+                        if(_products[i] == '\0')
+                        {
+                            continue;
+                        }
+                        return false;
+                    }
+
+                case '+':
+                    do
+                    {
+                        i++;
+                    }while(isspace(_products[i]));
+                    if(_products[i] == '+' || _products[i] == '\0')
+                    {
+                        return false;
+                    }
+            }
+        }
+    }
+    if(nreactives == 0 || nproducts == 0)
+    {
+        return false;
+    }
     char * reactives;
     char * products;
-    char * strtok_buffer;
-    size_t nreactives = 1;
-    size_t nproducts = 1;
-    char ** tokens;
-
-    for(size_t i = 0; _reactives[i] != '\0'; i++)
-    {
-        if(_reactives[i] == '+')
-        {
-            if(isspace(_reactives[i+1]))
-            {
-                do
-                {
-                    i++;
-                } while (isspace(_reactives[i]));
-                if(_reactives[i] == '+')
-                {
-                    return false;
-                }
-                i--;  
-            }
-            nreactives++;
-        }
-    }
-    for(size_t i = 0; _products[i] != '\0'; i++)
-    {
-        if(_products[i] == '+')
-        {
-            if(isspace(_products[i+1]))
-            {
-                do
-                {
-                    i++;
-                } while (isspace(_products[i]));
-                if(_products[i] == '+')
-                {
-                    return false;
-                }
-                i--;
-            }
-            nproducts++;
-        }
-    }
-
     reactives = strdup(_reactives);
     if(reactives == NULL)
     {
@@ -59,6 +126,8 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
         return false;
     }
 
+    char * strtok_buffer;
+    char ** tokens;
     tokens = malloc(sizeof(char*)*(nreactives > nproducts ? nreactives : nproducts));
     if(tokens == NULL)
     {
@@ -72,7 +141,8 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
     for(size_t i = 0; i < nreactives; i++)
     {
         tokens[i] = strtok_r(NULL," +",&strtok_buffer);
-        if(tokens[i] == NULL || is_str_substance(tokens[i]) == false)
+
+        if(tokens[i] == NULL)
         {
             free(tokens);//free tokens
 
@@ -106,8 +176,9 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
     strtok_buffer = products;
     for(size_t i = 0; i < nproducts; i++)
     {
-        tokens[i] = strtok_r(NULL," +",&strtok_buffer);
-        if(tokens[i] == NULL || is_str_substance(tokens[i]) == false)
+        tokens[i] = strtok_r(NULL,"+ ",&strtok_buffer);
+
+        if(tokens[i] == NULL || is_str_substance(tokens[i],IS_STR_SUBSTANCE_UNKNOWN_LEN) == false)
         {
             for(size_t i = 0; i < nreactives; i++)//destroy all reactives
             {

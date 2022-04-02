@@ -19,7 +19,9 @@ int main(int argc, char * argv[])
     {
         if(init_reaction(argv[i-1],argv[i],&react))
         {
-            printf("%s ---> %s\n",argv[i-1],argv[i]);
+            printf("Given:   %s ---> %s\n",argv[i-1],argv[i]);
+
+            printf("Program: ");
             for(size_t j = 0; j < react.reactives.nsubstances; j++)
             {
                 print_substance(&react.reactives.substances[j],buffer,100);
