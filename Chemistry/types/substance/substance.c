@@ -306,15 +306,17 @@ inline bool is_str_substance(const char * restrict str, ssize_t len)
                 } while (*str == '(');
                 
             default:
-                elem_symbol_t sym;
-                if(init_elem_symbol(str,&sym) == false)
                 {
-                    return false;
-                }
-                if(get_symbol_len(sym) == 2)
-                {
-                    str++;
-                    len--;
+                    elem_symbol_t sym;
+                    if(init_elem_symbol(str,&sym) == false)
+                    {
+                        return false;
+                    }
+                    if(get_symbol_len(sym) == 2)
+                    {
+                        str++;
+                        len--;
+                    }
                 }
 
             case ')':
