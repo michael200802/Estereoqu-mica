@@ -84,7 +84,7 @@ typedef struct
         size_t nsubstances;
         substance_t * substances;
     }
-    reactives,//substances set number 1
+    reactants,//substances set number 1
     products;//substances set number 2
 }reaction_t;
 

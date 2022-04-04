@@ -10,6 +10,6 @@
 
 #include <string.h>//strtok for parsing
 
-bool init_reaction(const char * restrict _reactives, const char * restrict _products, reaction_t * restrict const react);
+bool init_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react);
 
 extern void destroy_reaction(reaction_t * restrict const react);

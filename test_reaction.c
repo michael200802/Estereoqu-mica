@@ -22,11 +22,11 @@ int main(int argc, char * argv[])
             printf("Given:   %s ---> %s\n",argv[i-1],argv[i]);
 
             printf("Program: ");
-            for(size_t j = 0; j < react.reactives.nsubstances; j++)
+            for(size_t j = 0; j < react.reactants.nsubstances; j++)
             {
-                print_substance(&react.reactives.substances[j],buffer,100);
+                print_substance(&react.reactants.substances[j],buffer,100);
                 printf("%s",buffer);
-                if(j+1 != react.reactives.nsubstances)
+                if(j+1 != react.reactants.nsubstances)
                 {
                     printf(" + ");
                 }

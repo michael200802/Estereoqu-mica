@@ -1,45 +1,45 @@
 #include "reaction.h"
 
-bool init_reaction(const char * restrict _reactives, const char * restrict _products, reaction_t * restrict const react)
+bool init_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react)
 {
-    size_t nreactives = 0;
+    size_t nreactants = 0;
     size_t nproducts = 0;
     {
         size_t i;
 
         i = 0;
-        while(isspace(*_reactives))
+        while(isspace(*_reactants))
         {
-            _reactives++;
+            _reactants++;
         }
-        while(_reactives[i] != '\0')
+        while(_reactants[i] != '\0')
         {
             {
                 size_t substance_index = i;
 
-                while(isspace(_reactives[i]) == 0 && _reactives[i] != '+' && _reactives[i] != '\0')
+                while(isspace(_reactants[i]) == 0 && _reactants[i] != '+' && _reactants[i] != '\0')
                 {
                     i++;
                 }
 
-                if(is_str_substance(&_reactives[substance_index],i-substance_index) == false)
+                if(is_str_substance(&_reactants[substance_index],i-substance_index) == false)
                 {
                     return false;
                 }
 
-                nreactives++;
+                nreactants++;
             }
 
-            switch(_reactives[i])
+            switch(_reactants[i])
             {
                 case ' ':
-                    while(isspace(_reactives[i]))
+                    while(isspace(_reactants[i]))
                     {
                         i++;
                     }
-                    if(_reactives[i] != '+')
+                    if(_reactants[i] != '+')
                     {
-                        if(_reactives[i] == '\0')
+                        if(_reactants[i] == '\0')
                         {
                             continue;
                         }
@@ -48,11 +48,11 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
 
                 case '+':
                     i++;
-                    while(isspace(_reactives[i]))
+                    while(isspace(_reactants[i]))
                     {
                         i++;
                     }
-                    if(_reactives[i] == '+' || _reactives[i] == '\0')
+                    if(_reactants[i] == '+' || _reactants[i] == '\0')
                     {
                         return false;
                     }
@@ -109,14 +109,14 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
             }
         }
     }
-    if(nreactives == 0 || nproducts == 0)
+    if(nreactants == 0 || nproducts == 0)
     {
         return false;
     }
-    char * reactives;
+    char * reactants;
     char * products;
-    reactives = strdup(_reactives);
-    if(reactives == NULL)
+    reactants = strdup(_reactants);
+    if(reactants == NULL)
     {
         return false;
     }
@@ -128,17 +128,17 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
 
     char * strtok_buffer;
     char ** tokens;
-    tokens = malloc(sizeof(char*)*(nreactives > nproducts ? nreactives : nproducts));
+    tokens = malloc(sizeof(char*)*(nreactants > nproducts ? nreactants : nproducts));
     if(tokens == NULL)
     {
         //free input strings
         free(products);
-        free(reactives);
+        free(reactants);
         return false;
     }
 
-    strtok_buffer = reactives;
-    for(size_t i = 0; i < nreactives; i++)
+    strtok_buffer = reactants;
+    for(size_t i = 0; i < nreactants; i++)
     {
         tokens[i] = strtok_r(NULL," +",&strtok_buffer);
 
@@ -148,27 +148,27 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
 
             //free input strings
             free(products);
-            free(reactives);
+            free(reactants);
             return false;
         }
     }
-    react->reactives.nsubstances = nreactives;
-    react->reactives.substances = malloc(sizeof(substance_t)*nreactives);
-    for(size_t i = 0; i < nreactives; i++)
+    react->reactants.nsubstances = nreactants;
+    react->reactants.substances = malloc(sizeof(substance_t)*nreactants);
+    for(size_t i = 0; i < nreactants; i++)
     {
-        if(init_substance(tokens[i],&react->reactives.substances[i]) == false)//just in case... I know it isn't useful now but in the future it may be so
+        if(init_substance(tokens[i],&react->reactants.substances[i]) == false)//just in case... I know it isn't useful now but in the future it may be so
         {
-            for(size_t j = 0; j < i; j++)//free reactives already created
+            for(size_t j = 0; j < i; j++)//free reactants already created
             {
-                destroy_substance(&react->reactives.substances[j]);
+                destroy_substance(&react->reactants.substances[j]);
             }
-            free(react->reactives.substances);//free memory for reactives' array
+            free(react->reactants.substances);//free memory for reactants' array
 
             free(tokens);//free tokens
 
             //free input strings
             free(products);
-            free(reactives);
+            free(reactants);
             return false;
         } 
     }
@@ -180,17 +180,17 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
 
         if(tokens[i] == NULL || is_str_substance(tokens[i],IS_STR_SUBSTANCE_UNKNOWN_LEN) == false)
         {
-            for(size_t i = 0; i < nreactives; i++)//destroy all reactives
+            for(size_t i = 0; i < nreactants; i++)//destroy all reactants
             {
-                destroy_substance(&react->reactives.substances[i]);
+                destroy_substance(&react->reactants.substances[i]);
             }
-            free(react->reactives.substances);//free memory for reactives' array
+            free(react->reactants.substances);//free memory for reactants' array
 
             free(tokens);//free tokens
 
             //free input strings
             free(products);
-            free(reactives);
+            free(reactants);
 
             return false;
         }
@@ -209,29 +209,29 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
             }
             free(react->products.substances);//goodbye products' array
 
-            for(size_t i = 0; i < nreactives; i++)//destroy all reactives
+            for(size_t i = 0; i < nreactants; i++)//destroy all reactants
             {
-                destroy_substance(&react->reactives.substances[i]);
+                destroy_substance(&react->reactants.substances[i]);
             }
-            free(react->reactives.substances);//free memory for reactives' array
+            free(react->reactants.substances);//free memory for reactants' array
 
             //free input strings
             free(products);
-            free(reactives);
+            free(reactants);
 
             return false;
         }
     }
 
     {//see whether they have the same components
-        components_of_substance_t reactives_comp = {};
+        components_of_substance_t reactants_comp = {};
         components_of_substance_t products_comp = {};
         components_of_substance_t aux;
 
-        for(size_t i = 0; i < react->reactives.nsubstances; i++)
+        for(size_t i = 0; i < react->reactants.nsubstances; i++)
         {
-            get_components_of_substance(&react->reactives.substances[i],&aux);
-            sum_components_of_substance(&aux,&reactives_comp,&reactives_comp);
+            get_components_of_substance(&react->reactants.substances[i],&aux);
+            sum_components_of_substance(&aux,&reactants_comp,&reactants_comp);
         }
 
         for(size_t i = 0; i < react->products.nsubstances; i++)
@@ -240,7 +240,7 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
             sum_components_of_substance(&aux,&products_comp,&products_comp);
         }
 
-        if(compare_components_of_substance(&reactives_comp,&products_comp) == false)
+        if(compare_components_of_substance(&reactants_comp,&products_comp) == false)
         {
             //destroy the just created reaction
             destroy_reaction(react);
@@ -249,7 +249,7 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
 
             //free input strings
             free(products);
-            free(reactives);
+            free(reactants);
             return false;
         }
     }
@@ -259,18 +259,18 @@ bool init_reaction(const char * restrict _reactives, const char * restrict _prod
 
     //free input strings
     free(products);
-    free(reactives);
+    free(reactants);
 
     return true;
 }
 
 inline void destroy_reaction(reaction_t * restrict const react)
 {
-    for(size_t i = 0; i < react->reactives.nsubstances; i++)
+    for(size_t i = 0; i < react->reactants.nsubstances; i++)
     {
-        destroy_substance(&react->reactives.substances[i]);
+        destroy_substance(&react->reactants.substances[i]);
     }
-    free(react->reactives.substances);
+    free(react->reactants.substances);
 
     for(size_t i = 0; i < react->products.nsubstances; i++)
     {
