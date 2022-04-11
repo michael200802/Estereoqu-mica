@@ -74,6 +74,7 @@ typedef struct substance_t
 typedef struct
 {
     size_t bucket[NUMBER_OF_ELEMENTS+1];//the index of an element is its atomic number
+    size_t ncomponents;
 }components_of_substance_t;
 
 //chemical reaction

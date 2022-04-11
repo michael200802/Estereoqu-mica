@@ -471,6 +471,13 @@ inline void get_components_of_substance(const substance_t * const restrict sub, 
 {
     *comp = (components_of_substance_t){};
     _get_components_of_substance(sub,comp,1);
+    for(size_t i = 1; i < NUMBER_OF_ELEMENTS+1; i++)
+    {
+        if(comp->bucket[i] != 0)
+        {
+            comp->ncomponents++;
+        }
+    }
 }
 
 inline void sum_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2, components_of_substance_t * const result)
