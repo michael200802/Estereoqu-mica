@@ -1,5 +1,5 @@
-#compiler=x86_64-w64-mingw32-gcc
-compiler=gcc
+compiler=x86_64-w64-mingw32-gcc
+#compiler=gcc
 
 clean: *.o
 	rm *.o
@@ -39,22 +39,30 @@ Chemistry/types/substance/substance.o: Chemistry/types/substance/substance.c Che
 Chemistry/types/reaction/reaction.o: Chemistry/types/reaction/reaction.c Chemistry/types/reaction/reaction.h
 	$(compiler) -c Chemistry/types/reaction/reaction.c -o $@
 
+types_objf=Chemistry/types/reaction/reaction.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o
+
 test_elem: test_elem.c Chemistry/types/elem/elem.o $(constants_objf)
 	$(compiler) $? -o $@
 
 test_substance: test_substance.c Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
 	$(compiler) $? -o $@
 
-test_reaction: test_reaction.c Chemistry/types/reaction/reaction.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
+test_reaction: test_reaction.c $(types_objf) $(constants_objf)
 	$(compiler) $? -o $@
 
 #types------------------------------------------------------
 
+#GUI--------------------------------------------------------
 GUI/WIN.o: GUI/WIN.c GUI/GUI.h
 	$(compiler) -c GUI/WIN.c -o $@
+
+GUI/GUI.o: GUI/GUI.c GUI/GUI.h
+	$(compiler) -c GUI/GUI.c -o $@
+
+#GUI--------------------------------------------------------
 
 main.o: main.c GUI/GUI.h
 	$(compiler) -c main.c -o $@
 
-wmain.exe: main.o GUI/WIN.o
+wmain.exe: main.o GUI/WIN.o GUI/GUI.o $(types_objf) $(constants_objf)
 	$(compiler) -mwindows -pthread --static $? -o $@
