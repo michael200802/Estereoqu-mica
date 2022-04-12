@@ -77,15 +77,16 @@ typedef struct
     size_t ncomponents;
 }components_of_substance_t;
 
+typedef struct
+{
+    size_t nsubstances;
+    substance_t * substances;
+}substance_arr_t;
+
 //chemical reaction
 typedef struct
 {
-    struct
-    {
-        size_t nsubstances;
-        substance_t * substances;
-    }
-    reactants,//substances set number 1
-    products;//substances set number 2
+    substance_arr_t reactants;//substances set number 1
+    substance_arr_t products;//substances set number 2
 }reaction_t;
 
