@@ -33,11 +33,13 @@ typedef struct
 
 input_errcode_t set_cur_input(const reaction_t * restrict const react, const var_arr_t * restrict const reactants, const var_arr_t * restrict const products);
 
-input_t get_cur_input();
+input_t get_cur_input(void);
 
-void free_cur_input();
+void free_cur_input(void);
 
-int end_input(); 
+void send_endwnd_signal(void);
+
+int end_input(void); 
 
 extern void show_output(const char * str);
 

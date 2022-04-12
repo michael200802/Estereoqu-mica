@@ -24,8 +24,6 @@ int main(void)
                 return end_app();           
         }
 
-        puts("Hola");
-
     }
 
     return 0;

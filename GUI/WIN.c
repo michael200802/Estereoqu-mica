@@ -733,7 +733,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         }
         destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
         destroy_var_arr_ctrls(&var_arr_ctrls_products);
-        end_input();
+        send_endwnd_signal();
         PostQuitMessage(0);
     default:
         return DefWindowProc(hWnd,Msg,wParam,lParam);

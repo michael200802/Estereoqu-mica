@@ -60,7 +60,7 @@ inline input_errcode_t set_cur_input(const reaction_t * restrict const react, co
     return INPUT_NOERRROR;
 }
 
-inline input_t get_cur_input()
+inline input_t get_cur_input(void)
 {
     input_t error_return = {.error_code = INPUT_ERROR_READING};
 
@@ -96,17 +96,33 @@ inline input_t get_cur_input()
     return cur_input;
 }
 
-inline int end_input()
+inline void send_endwnd_signal(void)
 {
-    if(pthread_cond_signal(&input_condv) != 0)
-    {
-        exit(EXIT_FAILURE);
-    }
-    cur_input = (input_t){.error_code = INPUT_ERROR_WND_CLOSED};
     if(pthread_mutex_lock(&input_mutex) != 0)
     {
-        exit(EXIT_FAILURE);
+        msg_app("Error critico:","pthread_mutex_lock() fallo.");
+        return EXIT_FAILURE;
     }
+
+    cur_input = (input_t){.error_code = INPUT_ERROR_WND_CLOSED};
+
+    is_cur_input_ready = true;
+
+    if(pthread_mutex_unlock(&input_mutex) != 0)
+    {
+        msg_app("Error critico:","pthread_mutex_unlock() fallo.");
+        return EXIT_FAILURE;
+    }
+
+    if(pthread_cond_signal(&input_condv) != 0)
+    {
+        msg_app("Error critico:","pthread_cond_signal() fallo.");
+        return EXIT_FAILURE;
+    }
+}
+
+inline int end_input(void)
+{
     if(
         pthread_mutex_destroy(&input_mutex) == -1
         ||
