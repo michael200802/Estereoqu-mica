@@ -11,13 +11,13 @@ bool is_cur_input_ready = false;
 
 inline input_errcode_t set_cur_input(const reaction_t * restrict const react, const var_arr_t * restrict const reactants, const var_arr_t * restrict const products)
 {
+    //send input
+
     if(pthread_mutex_lock(&input_mutex) != 0)
     {
         msg_app("Error critico:","pthread_mutex_lock() fallo.");
         return INPUT_ERROR_MUTEX;
     }
-
-    free_cur_input();
 
     cur_input.react = *react;
     cur_input.var_arr_reactants = *reactants;
@@ -37,6 +37,26 @@ inline input_errcode_t set_cur_input(const reaction_t * restrict const react, co
         return INPUT_ERROR_CONDV_SIGNAL;
     }
 
+    //Now we wait until main() is ready for getting input again
+
+    if(pthread_mutex_lock(&input_mutex) != 0)
+    {
+        msg_app("Error critico:","pthread_mutex_lock() fallo.");
+        return INPUT_ERROR_MUTEX;
+    }
+
+    if(pthread_cond_wait(&input_condv,&input_mutex) != 0)
+    {
+        msg_app("Error critico:","pthread_cond_wait() fallo.");
+        return INPUT_ERROR_CONDV_WAIT;
+    }
+
+    if(pthread_mutex_unlock(&input_mutex) != 0)
+    {
+        msg_app("Error critico:","pthread_mutex_unlock() fallo.");
+        return INPUT_ERROR_MUTEX;
+    }
+
     return INPUT_NOERRROR;
 }
 
@@ -44,13 +64,19 @@ inline input_t get_cur_input()
 {
     input_t error_return = {.error_code = INPUT_ERROR_READING};
 
+    if(pthread_cond_signal(&input_condv) != 0)
+    {
+        msg_app("Error critico:","pthread_cond_signal() fallo.");
+        return (input_t){.error_code = INPUT_ERROR_CONDV_SIGNAL};
+    }
+
     if(pthread_mutex_lock(&input_mutex) != 0)
     {
         msg_app("Error critico:","pthread_mutex_lock() fallo.");
         return (input_t){INPUT_ERROR_MUTEX};
     }
 
-    while(!is_cur_input_ready)
+    if(!is_cur_input_ready)
     {
         if(pthread_cond_wait(&input_condv,&input_mutex) != 0)
         {
@@ -70,20 +96,17 @@ inline input_t get_cur_input()
     return cur_input;
 }
 
-inline void free_cur_input()
-{
-    if(is_cur_input_ready)
-    {
-        destroy_reaction(&cur_input.react);
-        free(cur_input.var_arr_reactants.substances);
-        free(cur_input.var_arr_products.substances);
-    }
-    is_cur_input_ready = false;
-}
-
 inline int end_input()
 {
-    free_cur_input();
+    if(pthread_cond_signal(&input_condv) != 0)
+    {
+        exit(EXIT_FAILURE);
+    }
+    cur_input = (input_t){.error_code = INPUT_ERROR_WND_CLOSED};
+    if(pthread_mutex_lock(&input_mutex) != 0)
+    {
+        exit(EXIT_FAILURE);
+    }
     if(
         pthread_mutex_destroy(&input_mutex) == -1
         ||

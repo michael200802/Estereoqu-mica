@@ -13,6 +13,7 @@ typedef struct
     struct
     {
         num_t mol;
+        num_t molar_mass;
     }*substances;
 }var_arr_t;
 
@@ -25,17 +26,7 @@ typedef struct
 
 #define init_var_arr(var_arr,nsubs)\
     var_arr.nsubstances = nsubs;\
-    var_arr.substances = malloc(nsubs*sizeof(substance_t));
-
-#define set_var_arr(var_arr, DO)            \
-    {                                       \
-        size_t i = 0;                       \
-        while(i < var_arr.nsubstances)      \
-        {                                   \
-            var_arr.substances[i].mol = DO; \
-            i++;                            \
-        }                                   \
-    }                                       \
+    var_arr.substances = calloc(var_arr.nsubstances,nsubs*sizeof(substance_t));
 
 #define destroy_var_arr(var_arr)\
     free(var_arr.substances);

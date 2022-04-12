@@ -17,7 +17,7 @@
 #define STATIC_PRODUCTS_TITLE_ID ((HMENU)4)
 #define STATIC_ERROR_ID ((HMENU)5)
 #define BUTTON_GETOUTPUT_ID ((HMENU)6)
-#define COMBOBOX_VARIABLES_ID_FLAG ((HMENU)-1)
+#define CTRLS_VARIABLE_ID(n) ((HMENU)(n))
 
 //size of controls
 #define LINE_HEIGHT 20
@@ -40,24 +40,30 @@
 #define BUTTON_GETOUTPUT_WIDTH 70
 #define BUTTON_GETOUTPUT_HEIGHT LINE_HEIGHT
 
+#define CTRLS_VARIABLE_WIDTH 600
+#define CTRLS_VARIABLE_HEIGHT LINE_HEIGHT*4
+
 //pos of controls
 #define EDIT_REACTANTS_X 20
 #define EDIT_REACTANTS_Y 50
 
 #define STATIC_REACTANTS_TITLE_X EDIT_REACTANTS_X
-#define STATIC_REACTANTS_TITLE_Y EDIT_REACTANTS_Y-LINE_HEIGHT
+#define STATIC_REACTANTS_TITLE_Y (EDIT_REACTANTS_Y-LINE_HEIGHT)
 
 #define EDIT_PRODUCTS_X EDIT_REACTANTS_X
-#define EDIT_PRODUCTS_Y EDIT_REACTANTS_Y+STATIC_REACTANTS_TITLE_HEIGHT+LINE_HEIGHT+10
+#define EDIT_PRODUCTS_Y (EDIT_REACTANTS_Y+STATIC_REACTANTS_TITLE_HEIGHT+LINE_HEIGHT+10)
 
 #define STATIC_PRODUCTS_TITLE_X EDIT_PRODUCTS_X
-#define STATIC_PRODUCTS_TITLE_Y EDIT_PRODUCTS_Y-LINE_HEIGHT
+#define STATIC_PRODUCTS_TITLE_Y (EDIT_PRODUCTS_Y-LINE_HEIGHT)
 
-#define STATIC_ERROR_X EDIT_REACTANTS_X + (EDIT_REACTANTS_WIDTH-STATIC_ERROR_WIDTH)/2
-#define STATIC_ERROR_Y STATIC_PRODUCTS_TITLE_Y + LINE_HEIGHT*2
+#define STATIC_ERROR_X (EDIT_REACTANTS_X + (EDIT_REACTANTS_WIDTH-STATIC_ERROR_WIDTH)/2)
+#define STATIC_ERROR_Y (STATIC_PRODUCTS_TITLE_Y + LINE_HEIGHT*3)
 
-#define BUTTON_GETOUTPUT_X EDIT_REACTANTS_X + (EDIT_REACTANTS_WIDTH-BUTTON_GETOUTPUT_WIDTH)/2
-#define BUTTON_GETOUTPUT_Y STATIC_ERROR_Y + LINE_HEIGHT*2
+#define BUTTON_GETOUTPUT_X (EDIT_REACTANTS_X + (EDIT_REACTANTS_WIDTH-BUTTON_GETOUTPUT_WIDTH)/2)
+#define BUTTON_GETOUTPUT_Y (STATIC_ERROR_Y + LINE_HEIGHT*2)
+
+#define CTRLS_VARIABLES_REACTANTS_X (EDIT_REACTANTS_X + 30)
+#define CTRLS_VARIABLES_PRODUCTS_X (CTRLS_VARIABLES_REACTANTS_X + CTRLS_VARIABLE_WIDTH + 40)
 
 //GUI
 typedef enum {
@@ -80,22 +86,166 @@ GUI_state_t GUI_state;
 //var arrays
 typedef struct
 {
-    HWND static_title, combobox, edit, static_error;
+    HWND static_title, edit, combobox, static_error;
+    bool is_ready;
 }var_ctrl_t;
 
 typedef struct
 {
+    var_arr_t var_arr;
+    
     size_t nctrls;
-    var_ctrl_t * ctrls; 
+    var_ctrl_t * ctrls;
+
 }var_arr_ctrls_t;
 
-#define init_var_arr_ctrls(var_arr, var_arr_ctrls, x_pos)\
-    var_arr_ctrls.nctrls = var_arr.nsubstances;\
-    var_arr_ctrls.ctrls = malloc(var_arr_ctrls.nctrls*sizeof(var_ctrl_t));\
-
-
-
 //global--------------------------------------
+
+static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND hMainWnd, HINSTANCE hIns, var_arr_ctrls_t * restrict var_arr)
+{
+    init_var_arr(var_arr->var_arr,subs.nsubstances);
+    
+    var_arr->nctrls = subs.nsubstances;
+    var_arr->ctrls = malloc(sizeof(var_ctrl_t)*var_arr->nctrls);
+
+    size_t cur_y_pos = BUTTON_GETOUTPUT_Y + LINE_HEIGHT*3;
+    for(size_t i = 0; i < subs.nsubstances; i++, cur_y_pos+=CTRLS_VARIABLE_HEIGHT)
+    {
+        var_arr->var_arr.substances[i].molar_mass = subs.substances[i].molar_mass;
+
+        char buffer[75];
+        print_substance(&subs.substances[i],buffer,75);        
+        var_arr->ctrls[i].static_title = CreateWindowEx(
+            0,
+            WC_STATIC,
+            buffer,
+            WS_CHILD|WS_VISIBLE|SS_SIMPLE,
+            x_pos,
+            cur_y_pos + 5,
+            CTRLS_VARIABLE_WIDTH,
+            LINE_HEIGHT,
+            hMainWnd,
+            CTRLS_VARIABLE_ID(x_pos+i*5+1),
+            hIns,
+            NULL
+        );
+
+        var_arr->ctrls[i].edit = CreateWindowEx(
+            0,
+            WC_EDIT,
+            "?",
+            WS_CHILD|WS_VISIBLE|WS_BORDER|ES_LEFT,
+            x_pos,
+            cur_y_pos + 5 + LINE_HEIGHT + 5,
+            CTRLS_VARIABLE_WIDTH-CTRLS_VARIABLE_WIDTH*0.2,
+            LINE_HEIGHT,
+            hMainWnd,
+            CTRLS_VARIABLE_ID(x_pos+i*5+2),
+            hIns,
+            NULL
+        );
+
+        var_arr->ctrls[i].combobox = CreateWindowEx(
+            0,
+            WC_COMBOBOX,
+            "",
+            WS_VISIBLE|WS_CHILD|WS_OVERLAPPED|CBS_HASSTRINGS|CBS_DROPDOWNLIST,
+            x_pos + (CTRLS_VARIABLE_WIDTH-CTRLS_VARIABLE_WIDTH*0.2),
+            cur_y_pos + 5 + LINE_HEIGHT + 5,
+            CTRLS_VARIABLE_WIDTH*0.2,
+            LINE_HEIGHT,
+            hMainWnd,
+            CTRLS_VARIABLE_ID(x_pos+i*5+3),
+            hIns,
+            NULL
+        );
+        ComboBox_AddString(var_arr->ctrls[i].combobox,"mol");
+        ComboBox_AddString(var_arr->ctrls[i].combobox,"g");
+        ComboBox_AddString(var_arr->ctrls[i].combobox,"kg");
+        ComboBox_SetCurSel(var_arr->ctrls[i].combobox,0);
+
+        var_arr->ctrls[i].static_error = CreateWindowEx(
+            0,
+            WC_STATIC,
+            "",
+            WS_CHILD|WS_VISIBLE|SS_SIMPLE,
+            x_pos,
+            cur_y_pos + 5 + LINE_HEIGHT + 5 + LINE_HEIGHT + 5,
+            CTRLS_VARIABLE_WIDTH,
+            LINE_HEIGHT,
+            hMainWnd,
+            CTRLS_VARIABLE_ID(x_pos+i*5+4),
+            hIns,
+            NULL
+        );
+        var_arr->ctrls[i].is_ready = true;
+    }
+}
+
+static inline bool get_all_vars_from_ctrls(const var_arr_ctrls_t * const restrict var_arr)
+{
+    //Chech if there were any errors
+    for(size_t i = 0; i < var_arr->nctrls; i++)
+    {
+        if(var_arr->ctrls[i].is_ready == false)
+        {
+            return false;
+        }
+    }
+
+    char buffer[100];
+    num_t num;
+    bool all_zero = true;
+
+    //get all variables
+    for(size_t i = 0; i < var_arr->nctrls; i++)
+    {
+        Edit_GetText(var_arr->ctrls[i].edit,buffer,100);
+        if(buffer[0] == '?' && buffer[1] == '\0')
+        {
+            var_arr->var_arr.substances[i].mol = 0;
+        }
+        else
+        {
+            all_zero = false;
+            if(sscanf(buffer,"%lf",&num) != 1)
+            {
+                return false;
+            }
+
+            switch (ComboBox_GetCurSel(var_arr->ctrls[i].combobox))
+            {
+                case 0://mol
+                    var_arr->var_arr.substances[i].mol = num;
+                    break;
+                case 2://kg
+                    num /= 1000;
+                case 1://g
+                    var_arr->var_arr.substances[i].mol = num * var_arr->var_arr.substances[i].molar_mass;
+                    break;
+            }
+        }
+    }
+
+    if(all_zero)
+    {
+        return true;
+    }
+    return true;
+}
+
+static inline void destroy_var_arr_ctrls(const var_arr_ctrls_t * const restrict var_arr)
+{
+    for(size_t i = 0; i < var_arr->nctrls; i++)
+    {
+        DestroyWindow(var_arr->ctrls[i].static_title);
+        DestroyWindow(var_arr->ctrls[i].combobox);
+        DestroyWindow(var_arr->ctrls[i].edit);
+        DestroyWindow(var_arr->ctrls[i].static_error);
+    }
+    free(var_arr->ctrls);
+    destroy_var_arr(var_arr->var_arr);
+}
 
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
@@ -196,7 +346,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     static reaction_t react;
     static bool is_reaction_ready;
 
-    static var_arr_ctrls_t var_arr_reactants_wnd, var_arr_products_wnd;
+    static var_arr_ctrls_t var_arr_ctrls_reactants, var_arr_ctrls_products;
     static bool is_var_arr_reactants_ready, is_var_arr_products_ready;
 
     switch (Msg)
@@ -212,11 +362,67 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 
             switch(LOWORD(wParam))
             {
+                default:
+                    {
+                        intptr_t child_id = LOWORD(wParam);
+                        if(child_id > CTRLS_VARIABLES_REACTANTS_X)
+                        {
+                            char ctrl_type = child_id % 5;
+                            if(ctrl_type == 2)
+                            {
+                                size_t var_ctrl_index;
+                                var_ctrl_t * var_ctrl;
+                                char buffer[75];
+                                num_t num;
+                                
+                                var_ctrl_index = child_id/5;
+                                if(child_id > CTRLS_VARIABLES_PRODUCTS_X)
+                                {
+                                    var_ctrl = &var_arr_ctrls_products.ctrls[var_ctrl_index];
+                                }
+                                else
+                                {
+                                    var_ctrl = &var_arr_ctrls_reactants.ctrls[var_ctrl_index];
+                                }
+
+                                if(Edit_GetTextLength(var_ctrl->edit) < 75)
+                                {
+                                    Edit_GetText(var_ctrl->edit,buffer,75);
+                                    if(!(buffer[0] == '?' && buffer[1] == '\0') && sscanf(buffer,"%lf",&num) != 1)
+                                    {
+                                        var_ctrl->is_ready = false;
+                                        Static_SetText(var_ctrl->static_error,"Cadena no valida.");   
+                                    }
+                                    else
+                                    {
+                                        var_ctrl->is_ready = true;
+                                    }
+                                }
+                                else
+                                {
+                                    var_ctrl->is_ready = false;
+                                    Static_SetText(var_ctrl->static_error,"Cadena muy grande.");
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case (intptr_t)BUTTON_GETOUTPUT_ID:
                     if(HIWORD(wParam) == BN_CLICKED)
                     {
-                        static var_arr_t var_arr_reactants, var_arr_products;
-
+                        if(is_reaction_ready)
+                        {
+                            if(get_all_vars_from_ctrls(&var_arr_ctrls_reactants))
+                            {
+                                if(get_all_vars_from_ctrls(&var_arr_ctrls_products))
+                                {
+                                    if(set_cur_input(&react,&var_arr_ctrls_reactants.var_arr,&var_arr_ctrls_products.var_arr) != INPUT_NOERRROR)
+                                    {
+                                        exit(EXIT_FAILURE);
+                                    }
+                                }
+                            }
+                        }
                     }
                     break;
                 case (intptr_t)EDIT_PRODUCTS_ID:
@@ -225,7 +431,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     {
                         if(is_var_arr_products_ready)
                         {
-
+                            destroy_var_arr_ctrls(&var_arr_ctrls_products);
                             is_var_arr_products_ready = false;
                         }
                         
@@ -259,6 +465,15 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 {
                                     is_var_arr_products_ready = true;
                                     Static_SetText(hstatic_error,"Todo en orden.");
+
+                                    init_var_arr_ctrls(react.products,CTRLS_VARIABLES_PRODUCTS_X,hWnd,hInstance,&var_arr_ctrls_products);
+                                    is_var_arr_products_ready = true;
+
+                                    if(is_var_arr_reactants_ready == false)
+                                    {
+                                        init_var_arr_ctrls(react.reactants,CTRLS_VARIABLES_REACTANTS_X,hWnd,hInstance,&var_arr_ctrls_reactants);
+                                        is_var_arr_reactants_ready = true;                                        
+                                    }
                                 }
                             }
                             else
@@ -280,6 +495,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     {
                         if(is_var_arr_reactants_ready)
                         {
+                            destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
                             is_var_arr_reactants_ready = false;
                         }
 
@@ -311,8 +527,17 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 }
                                 if(is_reaction_ready)
                                 {
-                                    Static_SetText(hstatic_error,"Todo en orden.");
                                     is_var_arr_reactants_ready = true;
+                                    Static_SetText(hstatic_error,"Todo en orden.");
+
+                                    init_var_arr_ctrls(react.reactants,CTRLS_VARIABLES_REACTANTS_X,hWnd,hInstance,&var_arr_ctrls_reactants);
+                                    is_var_arr_reactants_ready = true;
+
+                                    if(is_var_arr_products_ready == false)
+                                    {
+                                        init_var_arr_ctrls(react.products,CTRLS_VARIABLES_PRODUCTS_X,hWnd,hInstance,&var_arr_ctrls_products);
+                                        is_var_arr_products_ready = true;
+                                    }
                                 }
                             }
                             else
@@ -506,6 +731,9 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         {
             destroy_reaction(&react);
         }
+        destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
+        destroy_var_arr_ctrls(&var_arr_ctrls_products);
+        end_input();
         PostQuitMessage(0);
     default:
         return DefWindowProc(hWnd,Msg,wParam,lParam);
