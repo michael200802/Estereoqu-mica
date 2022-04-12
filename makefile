@@ -56,13 +56,15 @@ test_reaction: test_reaction.c $(types_objf) $(constants_objf)
 GUI/WIN.o: GUI/WIN.c GUI/GUI.h
 	$(compiler) -c GUI/WIN.c -o $@
 
-GUI/GUI.o: GUI/GUI.c GUI/GUI.h
-	$(compiler) -c GUI/GUI.c -o $@
+GUI/input.o: GUI/input.c GUI/GUI.h
+	$(compiler) -c GUI/input.c -o $@
 
+GUI/output.o: GUI/output.c GUI/GUI.h
+	$(compiler) -c GUI/output.c -o $@
 #GUI--------------------------------------------------------
 
 main.o: main.c GUI/GUI.h
 	$(compiler) -c main.c -o $@
 
-wmain.exe: main.o GUI/WIN.o GUI/GUI.o $(types_objf) $(constants_objf)
+wmain.exe: main.o GUI/WIN.o GUI/input.o $(types_objf) $(constants_objf)
 	$(compiler) -mwindows -pthread --static $? -o $@

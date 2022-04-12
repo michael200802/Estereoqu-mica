@@ -9,7 +9,7 @@ pthread_cond_t input_condv = PTHREAD_COND_INITIALIZER;
 input_t cur_input = {};
 bool is_cur_input_ready = false;
 
-inline input_errcode_t set_cur_input(const reaction_t * restrict const react, const var_arr_t * restrict const reactants, const var_arr_t * restrict const products)
+inline input_errcode_t send_new_input(const reaction_t * restrict const react, const var_arr_t * restrict const reactants, const var_arr_t * restrict const products)
 {
     //send input
 
@@ -19,9 +19,9 @@ inline input_errcode_t set_cur_input(const reaction_t * restrict const react, co
         return INPUT_ERROR_MUTEX;
     }
 
-    cur_input.react = *react;
-    cur_input.var_arr_reactants = *reactants;
-    cur_input.var_arr_products = *products;
+    cur_input.react = react;
+    cur_input.var_arr_reactants = reactants;
+    cur_input.var_arr_products = products;
 
     is_cur_input_ready = true;
 
@@ -101,7 +101,7 @@ inline void send_endwnd_signal(void)
     if(pthread_mutex_lock(&input_mutex) != 0)
     {
         msg_app("Error critico:","pthread_mutex_lock() fallo.");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     cur_input = (input_t){.error_code = INPUT_ERROR_WND_CLOSED};
@@ -111,23 +111,19 @@ inline void send_endwnd_signal(void)
     if(pthread_mutex_unlock(&input_mutex) != 0)
     {
         msg_app("Error critico:","pthread_mutex_unlock() fallo.");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     if(pthread_cond_signal(&input_condv) != 0)
     {
         msg_app("Error critico:","pthread_cond_signal() fallo.");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 }
 
 inline int end_input(void)
 {
-    if(
-        pthread_mutex_destroy(&input_mutex) == -1
-        ||
-        pthread_cond_destroy(&input_condv) == -1
-    )
+    if(pthread_mutex_destroy(&input_mutex) == -1 || pthread_cond_destroy(&input_condv) == -1)
     {
         return EXIT_FAILURE;
     }
