@@ -10,6 +10,9 @@
 //class name of mainwnd
 #define MAIN_WND_CLASSNAME "MAINWND"
 
+//class name of pop-up (output)
+#define POPUP_WND_CLASSNAME "OUTPUT_POPUP"
+
 //child-window identifiers
 #define EDIT_REACTANTS_ID ((HMENU)1)
 #define STATIC_REACTANTS_TITLE_ID ((HMENU)2)
@@ -107,6 +110,11 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
     
     var_arr->nctrls = subs.nsubstances;
     var_arr->ctrls = malloc(sizeof(var_ctrl_t)*var_arr->nctrls);
+    if(var_arr->ctrls == NULL)
+    {
+        msg_app("Error critico:","malloc() ha fallado; no se puede obtener memoria.");
+        exit(EXIT_FAILURE);
+    }
 
     size_t cur_y_pos = BUTTON_GETOUTPUT_Y + LINE_HEIGHT*3;
     for(size_t i = 0; i < subs.nsubstances; i++, cur_y_pos+=CTRLS_VARIABLE_HEIGHT)
@@ -249,6 +257,8 @@ static inline void destroy_var_arr_ctrls(const var_arr_ctrls_t * const restrict 
 
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
+LRESULT CALLBACK PopUpProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
 void * app_loop(void * hwnd);
 
 inline int start_app(void)
@@ -279,6 +289,16 @@ inline int start_app(void)
         .hIconSm = NULL
     };
     if(RegisterClassEx(&MainWndClass) == 0)
+    {
+        msg_app("Error critico:","RegisterClassEx() fallo.");
+        return EXIT_FAILURE;
+    }
+
+    //creating the pop-up class
+    WNDCLASSEX PopUpWndClass = MainWndClass;
+    PopUpWndClass.lpszClassName = POPUP_WND_CLASSNAME;
+    PopUpWndClass.lpfnWndProc = PopUpProc;
+    if(RegisterClassEx(&PopUpWndClass) == 0)
     {
         msg_app("Error critico:","RegisterClassEx() fallo.");
         return EXIT_FAILURE;
@@ -322,14 +342,77 @@ inline int start_app(void)
     return EXIT_SUCCESS;
 }
 
-inline int end_app(void)
+//show window ---> using pop-up to show a string
+
+LRESULT CALLBACK PopUpProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    return end_input();
+    switch(Msg)
+    {
+        case WM_CREATE:
+            {
+                char * str = ((CREATESTRUCT*)lParam)->lpCreateParams;
+                CreateWindowEx(
+                    0,
+                    WC_EDIT,
+                    str,
+                    WS_VISIBLE|WS_CHILD|WS_VSCROLL|WS_HSCROLL|ES_LEFT|ES_MULTILINE|ES_READONLY,
+                    0,
+                    0,
+                    1000,
+                    600,
+                    hWnd,
+                    NULL,
+                    NULL,
+                    NULL
+                );
+            }
+            break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+        default:
+            return DefWindowProc(hWnd,Msg,wParam,lParam);
+    }
+    return 0;
 }
+
+inline void show_output(const char * str)
+{
+    HWND hpopup = CreateWindowEx(
+            0,
+            POPUP_WND_CLASSNAME,
+            "",
+            WS_VISIBLE|WS_POPUPWINDOW|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_CAPTION,
+            200,
+            100,
+            1000,
+            600,
+            HWND_DESKTOP,
+            NULL,
+            NULL,
+            str
+        );
+    ShowWindow(hpopup,SW_NORMAL);
+
+    MSG Msg;
+
+    while(GetMessage(&Msg,NULL,0,0) == TRUE)
+    {
+        TranslateMessage(&Msg);
+        DispatchMessage(&Msg);
+    }
+}
+
+//show window ---> using pop-up to show a string
 
 inline void msg_app(const char * MBTitle, const char * MBMsg)
 {
     MessageBox(HWND_DESKTOP,MBMsg,MBTitle,MB_OK|MB_ICONINFORMATION|MB_DEFBUTTON1|MB_SYSTEMMODAL);
+}
+
+inline int end_app(void)
+{
+    return end_input();
 }
 
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -346,7 +429,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     static reaction_t react;
     static bool is_reaction_ready;
 
-    static var_arr_ctrls_t var_arr_ctrls_reactants, var_arr_ctrls_products;
+    static var_arr_ctrls_t var_arr_ctrls_reactants = {}, var_arr_ctrls_products = {};
     static bool is_var_arr_reactants_ready, is_var_arr_products_ready;
 
     switch (Msg)
@@ -416,7 +499,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                             {
                                 if(get_all_vars_from_ctrls(&var_arr_ctrls_products))
                                 {
-                                    if(set_cur_input(&react,&var_arr_ctrls_reactants.var_arr,&var_arr_ctrls_products.var_arr) != INPUT_NOERRROR)
+                                    if(send_new_input(&react,&var_arr_ctrls_reactants.var_arr,&var_arr_ctrls_products.var_arr) != INPUT_NOERRROR)
                                     {
                                         exit(EXIT_FAILURE);
                                     }
@@ -731,8 +814,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         {
             destroy_reaction(&react);
         }
-        destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
-        destroy_var_arr_ctrls(&var_arr_ctrls_products);
+        if(is_var_arr_products_ready)
+        {
+            destroy_var_arr_ctrls(&var_arr_ctrls_products);
+        }
+        if(is_var_arr_reactants_ready)
+        {
+            destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
+        }
         send_endwnd_signal();
         PostQuitMessage(0);
     default:

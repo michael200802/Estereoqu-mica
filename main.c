@@ -16,14 +16,18 @@ int main(void)
 
         switch (input.error_code)
         {
-            case INPUT_ERROR_READING:
+            case INPUT_NOERRROR:
+                break;
+            default:
                 msg_app("Error en el input.","Se le comunicara el error al Michu.");
-                return end_app();
             case INPUT_ERROR_WND_CLOSED:
                 msg_app("Vuelva pronto,","Adios.");
                 return end_app();           
         }
+        
+        catstr_to_output_buffer("Hello world.",sizeof("Hello world.")-1);
 
+        flush_output_buffer();        
     }
 
     return 0;

@@ -66,5 +66,5 @@ GUI/output.o: GUI/output.c GUI/GUI.h
 main.o: main.c GUI/GUI.h
 	$(compiler) -c main.c -o $@
 
-wmain.exe: main.o GUI/WIN.o GUI/input.o $(types_objf) $(constants_objf)
+wmain.exe: main.o GUI/WIN.o GUI/input.o GUI/output.o $(types_objf) $(constants_objf)
 	$(compiler) -mwindows -pthread --static $? -o $@
