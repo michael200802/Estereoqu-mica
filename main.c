@@ -24,8 +24,19 @@ int main(void)
                 msg_app("Vuelva pronto,","Adios.");
                 return end_app();           
         }
-        
-        catstr_to_output_buffer("Hello world.",sizeof("Hello world.")-1);
+
+        catstr_to_output_buffer("Hola Mundo",(sizeof "Hola Mundo") - 1);
+        /*
+        for(size_t i = 0; i < 100; i++)
+        {
+            for(size_t i = 0; i < 1000; i++)
+            {
+                char buffer[100];
+                catstr_to_output_buffer(buffer,sprintf(buffer,"%zu",i));
+            }
+            catstr_to_output_buffer("\r\n",2);
+        }
+        */
 
         flush_output_buffer();        
     }

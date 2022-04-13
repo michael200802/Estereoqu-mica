@@ -46,6 +46,9 @@
 #define CTRLS_VARIABLE_WIDTH 600
 #define CTRLS_VARIABLE_HEIGHT LINE_HEIGHT*4
 
+#define POPUP_OUTPUT_WIDTH 1000
+#define POPUP_OUTPUT_HEIGHT 600
+
 //pos of controls
 #define EDIT_REACTANTS_X 20
 #define EDIT_REACTANTS_Y 50
@@ -67,6 +70,9 @@
 
 #define CTRLS_VARIABLES_REACTANTS_X (EDIT_REACTANTS_X + 30)
 #define CTRLS_VARIABLES_PRODUCTS_X (CTRLS_VARIABLES_REACTANTS_X + CTRLS_VARIABLE_WIDTH + 40)
+
+#define POPUP_OUTPUT_X 200
+#define POPUP_OUTPUT_y 100
 
 //GUI
 typedef enum {
@@ -346,20 +352,31 @@ inline int start_app(void)
 
 LRESULT CALLBACK PopUpProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+    static HWND hpopup;
     switch(Msg)
     {
+        case WM_SIZE:
+            {
+                RECT pos;
+                GetWindowRect(hWnd,&pos);
+                size_t width = pos.right-pos.left;
+                size_t height = pos.bottom-pos.top;
+
+                SetWindowPos(hpopup,HWND_TOP,0,0,width-10,height-30,SWP_SHOWWINDOW|SWP_NOMOVE);
+            }
+            break;
         case WM_CREATE:
             {
                 char * str = ((CREATESTRUCT*)lParam)->lpCreateParams;
-                CreateWindowEx(
+                hpopup = CreateWindowEx(
                     0,
                     WC_EDIT,
                     str,
                     WS_VISIBLE|WS_CHILD|WS_VSCROLL|WS_HSCROLL|ES_LEFT|ES_MULTILINE|ES_READONLY,
                     0,
                     0,
-                    1000,
-                    600,
+                    POPUP_OUTPUT_WIDTH,
+                    POPUP_OUTPUT_HEIGHT,
                     hWnd,
                     NULL,
                     NULL,
@@ -382,11 +399,11 @@ inline void show_output(const char * str)
             0,
             POPUP_WND_CLASSNAME,
             "",
-            WS_VISIBLE|WS_POPUPWINDOW|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_CAPTION,
-            200,
-            100,
-            1000,
-            600,
+            WS_VISIBLE|WS_POPUPWINDOW|WS_MINIMIZEBOX|WS_CAPTION|WS_THICKFRAME,
+            POPUP_OUTPUT_X,
+            POPUP_OUTPUT_y,
+            POPUP_OUTPUT_WIDTH + 10,
+            POPUP_OUTPUT_HEIGHT + 30,
             HWND_DESKTOP,
             NULL,
             NULL,
