@@ -329,7 +329,6 @@ inline bool is_str_substance(const char * restrict str, ssize_t len)
                 }
         }
     }
-    
 
     return true;
 }
@@ -367,7 +366,7 @@ size_t _print_substance(const substance_t * const restrict sub, char * buffer, s
     if(sub->is_simple_substance)
     {
         char symbol_len = get_symbol_len(sub->substance.elem.symbol);
-        if(buffer_len <= symbol_len)
+        if(buffer_len <= symbol_len+1)
         {
             return 0;
         }
@@ -433,12 +432,15 @@ size_t _print_substance(const substance_t * const restrict sub, char * buffer, s
         }
     }
 
+    printf("%zu\n",buffer_len);
+
     return buffer_len;
 }
 
-inline bool print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len)
+//prints substance and then returns the number of written bytes (ignoring the null byte)
+inline size_t print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len)
 {
-    size_t printsizer;
+    size_t printsizer = 0;
 
     if(sub->amount != 1)
     {
@@ -449,7 +451,7 @@ inline bool print_substance(const substance_t * const restrict sub, char * buffe
         }
     }
 
-    return _print_substance(sub->substance.compound.substances,buffer,buffer_len-printsizer);
+    return (buffer_len - _print_substance(sub->substance.compound.substances,buffer,buffer_len-printsizer));
 }
 
 static inline void _get_components_of_substance(const substance_t * const restrict sub, components_of_substance_t * const restrict comp, size_t multiplier)

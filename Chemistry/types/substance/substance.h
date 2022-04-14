@@ -16,7 +16,7 @@ extern bool init_substance(const char * str, substance_t * const restrict sub);
 #define IS_STR_SUBSTANCE_UNKNOWN_LEN -1
 extern bool is_str_substance(const char * restrict str, ssize_t len);
 
-extern bool print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len);
+extern size_t print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len);
 
 extern void get_components_of_substance(const substance_t * const restrict sub, components_of_substance_t * const restrict comp);
 
