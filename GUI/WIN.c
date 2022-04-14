@@ -222,20 +222,24 @@ static inline char get_all_vars_from_ctrls(const var_arr_ctrls_t * const restric
         else
         {
             all_zero = false;
-            if(sscanf(buffer,"%lf",&num) != 1)
-            {
-                return 0;
-            }
+            num = strtod(buffer,NULL);
+
+            printf("%lf\n",var_arr->var_arr.substances[i].molar_mass);
 
             switch (ComboBox_GetCurSel(var_arr->ctrls[i].combobox))
             {
                 case 0://mol
                     var_arr->var_arr.substances[i].mol = num;
+                    var_arr->var_arr.substances[i].unit = 'm';
                     break;
                 case 2://kg
                     num /= 1000;
+                    var_arr->var_arr.substances[i].mol = num / var_arr->var_arr.substances[i].molar_mass;                    
+                    var_arr->var_arr.substances[i].unit = 'k';
+                    break;
                 case 1://g
-                    var_arr->var_arr.substances[i].mol = num * var_arr->var_arr.substances[i].molar_mass;
+                    var_arr->var_arr.substances[i].mol = num / var_arr->var_arr.substances[i].molar_mass;
+                    var_arr->var_arr.substances[i].unit = 'g';
                     break;
             }
         }

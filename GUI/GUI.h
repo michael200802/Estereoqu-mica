@@ -12,6 +12,7 @@ typedef struct
     {
         num_t mol;
         num_t molar_mass;
+        char unit;//'k' for kg, 'g' for g, and 'm' for mol
     }*substances;
 }var_arr_t;
 
