@@ -61,7 +61,7 @@ void end_output(void); //free resources
 //GUI API---------------------------------------------------------
 extern int start_app(void);//starts the application (creates GUI)
 
-extern void show_output(const char * str);//shows the output
+void * show_output(void * args);
 
 extern void msg_app(const char * MBTitle, const char * MBMsg);//msg box: mostly used for showing errors
 

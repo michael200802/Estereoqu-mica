@@ -1,5 +1,7 @@
 #include "GUI.h"
 #include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 char * buffer = NULL;
 size_t buffer_size = 0;
@@ -24,12 +26,31 @@ inline void catstr_to_output_buffer(const char * str, size_t str_len)
 
 inline void flush_output_buffer(void)
 {
-    show_output(buffer);
+    pthread_t thread;
+    sem_t sem;
+
+    sem_init(&sem,0,0);
+
+    struct
+    {
+        sem_t * sem;
+        const char * str;
+    }thread_arg = {.sem = &sem, .str = buffer};
+
+    if(pthread_create(&thread,NULL,show_output,&thread_arg) != 0)
+    {
+        msg_app("Error critico:","pthread_create() ha fallado.");
+        exit(EXIT_FAILURE);
+    }
+
+    sem_wait(&sem);
 
     free(buffer);
     buffer = NULL;
     buffer_size = 0;
     buffer_str_len = 1;
+
+    sem_destroy(&sem);
 }
 
 inline void end_output(void)

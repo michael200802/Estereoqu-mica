@@ -393,8 +393,17 @@ LRESULT CALLBACK PopUpProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-inline void show_output(const char * str)
+void * show_output(void * args)
 {
+    struct
+    {
+        sem_t * sem;
+        const char * str;
+    }*thread_arg = args;
+
+    const char * str = thread_arg->str;
+    sem_t * sem = thread_arg->sem;
+
     HWND hpopup = CreateWindowEx(
             0,
             POPUP_WND_CLASSNAME,
@@ -409,6 +418,9 @@ inline void show_output(const char * str)
             NULL,
             str
         );
+    
+    sem_post(sem);
+    
     ShowWindow(hpopup,SW_NORMAL);
 
     MSG Msg;
