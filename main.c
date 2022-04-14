@@ -57,13 +57,13 @@ int main(void)
                         switch(var_arrs[j]->substances[i].unit)
                         {
                             case 'm':
-                                catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf mol ",var_arrs[j]->substances[i].mol));
+                                catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf mol de ",var_arrs[j]->substances[i].mol));
                                 break;
                             case 'g':
-                                catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf g ",var_arrs[j]->substances[i].mol*var_arrs[j]->substances[i].molar_mass));
+                                catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf g de ",var_arrs[j]->substances[i].mol*var_arrs[j]->substances[i].molar_mass));
                                 break;
                             case 'k':
-                                catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf kg ",(var_arrs[j]->substances[i].mol*var_arrs[j]->substances[i].molar_mass)/1000));
+                                catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf kg de ",(var_arrs[j]->substances[i].mol*var_arrs[j]->substances[i].molar_mass)/1000));
                                 break;
                         }
                         catstr_to_output_buffer(buffer,print_substance(subs,buffer,1000));
