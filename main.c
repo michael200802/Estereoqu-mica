@@ -25,18 +25,146 @@ int main(void)
                 return end_app();           
         }
 
-        catstr_to_output_buffer("Hola Mundo",(sizeof "Hola Mundo") - 1);
-        /*
-        for(size_t i = 0; i < 100; i++)
         {
-            for(size_t i = 0; i < 1000; i++)
+            const reaction_t * const react = input.react;
+
+            const var_arr_t * const var_arrs[2] = {input.var_arr_reactants, input.var_arr_products};
+
+            num_t seed;
+            char buffer[1000];
+
+            for(size_t j = 0; j < 2; j++)
             {
-                char buffer[100];
-                catstr_to_output_buffer(buffer,sprintf(buffer,"%zu",i));
+                for(size_t i = 0; i < var_arrs[j]->nsubstances; i++)
+                {
+                    if(var_arrs[j]->substances[i].mol != 0)
+                    {
+                        substance_t * subs = (j == 0 ? &react->reactants.substances[i] : &react->products.substances[i]);
+                        size_t amount;
+
+                        seed = var_arrs[j]->substances[i].mol / subs->amount;
+
+                        amount = subs->amount;
+                        subs->amount = 1;
+                        catstr_to_output_buffer("\r\n",2);
+                        catstr_to_output_buffer(buffer,print_substance(subs,buffer,1000));
+                        catstr_to_output_buffer("\r\n",2);
+                        subs->amount = amount;
+
+                        //mol
+                        for (size_t i = 0; i < react->reactants.nsubstances; i++)
+                        {
+                            catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf mol ",react->reactants.substances[i].amount*seed));
+
+                            {
+                                size_t amount = react->reactants.substances[i].amount;
+                                react->reactants.substances[i].amount = 1;
+                                catstr_to_output_buffer(buffer,print_substance(&react->reactants.substances[i],buffer,1000));
+                                react->reactants.substances[i].amount = amount;
+                            }
+
+                            if(i != react->reactants.nsubstances-1)
+                            {
+                                catstr_to_output_buffer(" + ",3);
+                            }
+                        }
+                        catstr_to_output_buffer("--->",sizeof("--->")-1);
+                        for (size_t i = 0; i < react->products.nsubstances; i++)
+                        {
+                            catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf mol ",react->products.substances[i].amount*seed));
+
+                            {
+                                size_t amount = react->products.substances[i].amount;
+                                react->products.substances[i].amount = 1;
+                                catstr_to_output_buffer(buffer,print_substance(&react->products.substances[i],buffer,1000));
+                                react->products.substances[i].amount = amount;
+                            }
+
+                            if(i != react->products.nsubstances-1)
+                            {
+                                catstr_to_output_buffer(" + ",3);
+                            }
+                        }
+                        catstr_to_output_buffer("\r\n",2);
+
+                        //g
+                        for (size_t i = 0; i < react->reactants.nsubstances; i++)
+                        {
+                            catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf g ",(react->reactants.substances[i].amount*seed)*react->reactants.substances[i].molar_mass));
+
+                            {
+                                size_t amount = react->reactants.substances[i].amount;
+                                react->reactants.substances[i].amount = 1;
+                                catstr_to_output_buffer(buffer,print_substance(&react->reactants.substances[i],buffer,1000));
+                                react->reactants.substances[i].amount = amount;
+                            }
+
+                            if(i != react->reactants.nsubstances-1)
+                            {
+                                catstr_to_output_buffer(" + ",3);
+                            }
+                        }
+                        catstr_to_output_buffer("--->",sizeof("--->")-1);
+                        for (size_t i = 0; i < react->products.nsubstances; i++)
+                        {
+                            catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf g ",(react->products.substances[i].amount*seed)*react->products.substances[i].molar_mass));
+
+                            {
+                                size_t amount = react->products.substances[i].amount;
+                                react->products.substances[i].amount = 1;
+                                catstr_to_output_buffer(buffer,print_substance(&react->products.substances[i],buffer,1000));
+                                react->products.substances[i].amount = amount;
+                            }
+
+                            if(i != react->products.nsubstances-1)
+                            {
+                                catstr_to_output_buffer(" + ",3);
+                            }
+                        }
+                        catstr_to_output_buffer("\r\n",2);
+
+                        //kg
+                        for (size_t i = 0; i < react->reactants.nsubstances; i++)
+                        {
+                            catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf kg ",(react->reactants.substances[i].amount*seed)*react->reactants.substances[i].molar_mass/100));
+
+                            {
+                                size_t amount = react->reactants.substances[i].amount;
+                                react->reactants.substances[i].amount = 1;
+                                catstr_to_output_buffer(buffer,print_substance(&react->reactants.substances[i],buffer,1000));
+                                react->reactants.substances[i].amount = amount;
+                            }
+
+                            if(i != react->reactants.nsubstances-1)
+                            {
+                                catstr_to_output_buffer(" + ",3);
+                            }
+                        }
+                        catstr_to_output_buffer("--->",sizeof("--->")-1);
+                        for (size_t i = 0; i < react->products.nsubstances; i++)
+                        {
+                            catstr_to_output_buffer(buffer,sprintf(buffer,"%.2lf kg ",(react->products.substances[i].amount*seed)*react->products.substances[i].molar_mass/1000));
+
+                            {
+                                size_t amount = react->products.substances[i].amount;
+                                react->products.substances[i].amount = 1;
+                                catstr_to_output_buffer(buffer,print_substance(&react->products.substances[i],buffer,1000));
+                                react->products.substances[i].amount = amount;
+                            }
+
+                            if(i != react->products.nsubstances-1)
+                            {
+                                catstr_to_output_buffer(" + ",3);
+                            }
+                        }
+                        catstr_to_output_buffer("\r\n",2);
+
+                    }
+            
+                }
             }
-            catstr_to_output_buffer("\r\n",2);
+
         }
-        */
 
         flush_output_buffer();        
     }

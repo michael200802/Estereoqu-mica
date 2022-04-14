@@ -181,7 +181,7 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
         var_arr->ctrls[i].static_error = CreateWindowEx(
             0,
             WC_STATIC,
-            "",
+            "Desconocido.        ",
             WS_CHILD|WS_VISIBLE|SS_SIMPLE,
             x_pos,
             cur_y_pos + 5 + LINE_HEIGHT + 5 + LINE_HEIGHT + 5,
@@ -196,14 +196,14 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
     }
 }
 
-static inline bool get_all_vars_from_ctrls(const var_arr_ctrls_t * const restrict var_arr)
+static inline char get_all_vars_from_ctrls(const var_arr_ctrls_t * const restrict var_arr)
 {
     //Chech if there were any errors
     for(size_t i = 0; i < var_arr->nctrls; i++)
     {
         if(var_arr->ctrls[i].is_ready == false)
         {
-            return false;
+            return 0;
         }
     }
 
@@ -224,7 +224,7 @@ static inline bool get_all_vars_from_ctrls(const var_arr_ctrls_t * const restric
             all_zero = false;
             if(sscanf(buffer,"%lf",&num) != 1)
             {
-                return false;
+                return 0;
             }
 
             switch (ComboBox_GetCurSel(var_arr->ctrls[i].combobox))
@@ -243,9 +243,9 @@ static inline bool get_all_vars_from_ctrls(const var_arr_ctrls_t * const restric
 
     if(all_zero)
     {
-        return true;
+        return -2;
     }
-    return true;
+    return 1;
 }
 
 static inline void destroy_var_arr_ctrls(const var_arr_ctrls_t * const restrict var_arr)
@@ -488,7 +488,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 char buffer[75];
                                 num_t num;
                                 
-                                var_ctrl_index = child_id/5;
+                                var_ctrl_index = child_id - (child_id < CTRLS_VARIABLES_PRODUCTS_X ? CTRLS_VARIABLES_REACTANTS_X : CTRLS_VARIABLES_PRODUCTS_X);
+                                var_ctrl_index /= 5;
                                 if(child_id > CTRLS_VARIABLES_PRODUCTS_X)
                                 {
                                     var_ctrl = &var_arr_ctrls_products.ctrls[var_ctrl_index];
@@ -501,13 +502,29 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 if(Edit_GetTextLength(var_ctrl->edit) < 75)
                                 {
                                     Edit_GetText(var_ctrl->edit,buffer,75);
-                                    if(!(buffer[0] == '?' && buffer[1] == '\0') && sscanf(buffer,"%lf",&num) != 1)
+                                    char * ptrtoend;
+                                    num = strtod(buffer,&ptrtoend);
+                                    if(*ptrtoend != 0)
+                                    {
+                                        if(!(buffer[0] == '?' && buffer[1] == '\0'))
+                                        {
+                                            var_ctrl->is_ready = false;
+                                            Static_SetText(var_ctrl->static_error,"Cadena no valida. "); 
+                                        }
+                                        else
+                                        {
+                                            Static_SetText(var_ctrl->static_error,"Desconocido.        ");
+                                            var_ctrl->is_ready = true;                                            
+                                        }
+                                    }
+                                    else if(num == 0 || num < 0)
                                     {
                                         var_ctrl->is_ready = false;
-                                        Static_SetText(var_ctrl->static_error,"Cadena no valida.");   
+                                        Static_SetText(var_ctrl->static_error,"Numero no valido.");
                                     }
                                     else
                                     {
+                                        Static_SetText(var_ctrl->static_error,"Valido.                   ");
                                         var_ctrl->is_ready = true;
                                     }
                                 }
@@ -525,14 +542,13 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     {
                         if(is_reaction_ready)
                         {
-                            if(get_all_vars_from_ctrls(&var_arr_ctrls_reactants))
+                            char vars_reactants = get_all_vars_from_ctrls(&var_arr_ctrls_reactants);
+                            char vars_products = get_all_vars_from_ctrls(&var_arr_ctrls_products);
+                            if(vars_reactants + vars_products == 2 || vars_reactants + vars_products == -1)
                             {
-                                if(get_all_vars_from_ctrls(&var_arr_ctrls_products))
+                                if(send_new_input(&react,&var_arr_ctrls_reactants.var_arr,&var_arr_ctrls_products.var_arr) != INPUT_NOERRROR)
                                 {
-                                    if(send_new_input(&react,&var_arr_ctrls_reactants.var_arr,&var_arr_ctrls_products.var_arr) != INPUT_NOERRROR)
-                                    {
-                                        exit(EXIT_FAILURE);
-                                    }
+                                    exit(EXIT_FAILURE);
                                 }
                             }
                         }
