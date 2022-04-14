@@ -504,7 +504,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                     Edit_GetText(var_ctrl->edit,buffer,75);
                                     char * ptrtoend;
                                     num = strtod(buffer,&ptrtoend);
-                                    if(*ptrtoend != 0)
+                                    if(*ptrtoend != '\0')
                                     {
                                         if(!(buffer[0] == '?' && buffer[1] == '\0'))
                                         {
