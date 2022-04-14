@@ -432,8 +432,6 @@ size_t _print_substance(const substance_t * const restrict sub, char * buffer, s
         }
     }
 
-    printf("%zu\n",buffer_len);
-
     return buffer_len;
 }
 
