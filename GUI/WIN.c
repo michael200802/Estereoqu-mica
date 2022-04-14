@@ -429,6 +429,7 @@ inline void msg_app(const char * MBTitle, const char * MBMsg)
 
 inline int end_app(void)
 {
+    end_output();
     return end_input();
 }
 
