@@ -26,13 +26,13 @@
 #define LINE_HEIGHT 20
 
 #define EDIT_REACTANTS_WIDTH 1300
-#define EDIT_REACTANTS_HEIGHT LINE_HEIGHT
+#define EDIT_REACTANTS_HEIGHT (LINE_HEIGHT)
 
 #define STATIC_REACTANTS_TITLE_WIDTH 70
 #define STATIC_REACTANTS_TITLE_HEIGHT LINE_HEIGHT
 
 #define EDIT_PRODUCTS_WIDTH EDIT_REACTANTS_WIDTH
-#define EDIT_PRODUCTS_HEIGHT LINE_HEIGHT
+#define EDIT_PRODUCTS_HEIGHT (LINE_HEIGHT)
 
 #define STATIC_PRODUCTS_TITLE_WIDTH 70
 #define STATIC_PRODUCTS_TITLE_HEIGHT LINE_HEIGHT
@@ -700,7 +700,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     0,
                     WC_EDIT,
                     "",
-                    WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_BORDER|ES_CENTER,
+                    WS_CHILD|WS_VISIBLE|WS_BORDER|ES_CENTER,
                     EDIT_REACTANTS_X,
                     EDIT_REACTANTS_Y,
                     EDIT_REACTANTS_WIDTH,
@@ -752,7 +752,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     0,
                     WC_EDIT,
                     "",
-                    WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_BORDER|ES_CENTER,
+                    WS_CHILD|WS_VISIBLE|WS_BORDER|ES_CENTER,
                     EDIT_PRODUCTS_X,
                     EDIT_PRODUCTS_Y,
                     EDIT_PRODUCTS_WIDTH,
@@ -893,7 +893,7 @@ void * app_loop(void * hwnd)
             0,
             MAIN_WND_CLASSNAME,
             "COCA",
-            WS_OVERLAPPED,
+            WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
