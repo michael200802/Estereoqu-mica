@@ -3,11 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#define MAXLEN_OF_SYMBOL 2
-
-#define MAXNUMBER_OF_OXISTATES 8
-
-#define NUMBER_OF_ELEMENTS 118
+#include "../constants/constants.h"
 
 //id of an elem
 typedef char atomic_num_t;
@@ -24,8 +20,6 @@ typedef struct
 //an element cannot have a current oxistate 
 typedef char oxistate_t;
 
-#define UNKNOWN_OXISTATE 0
-
 typedef struct
 {
     unsigned char n;
@@ -39,9 +33,6 @@ typedef double num_t;
 typedef struct
 {
     atomic_num_t atomic_num;
-    elem_symbol_t symbol;
-    num_t molar_mass;
-    oxistates_t possible_oxistates;
 }elem_t;
 
 //substance

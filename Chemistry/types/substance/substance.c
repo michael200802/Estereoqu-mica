@@ -117,7 +117,7 @@ static inline void _init_substance(const char * str, const char * endstr, substa
                 sub->amount = 1;
             }
 
-            sub->molar_mass = sub->substance.elem.molar_mass;
+            sub->molar_mass = elem_get_uma(sub->substance.elem);
         }
     }
     else
@@ -178,7 +178,7 @@ static inline void _init_substance(const char * str, const char * endstr, substa
                 }
                 
                 //get molar mass
-                substances[i].molar_mass = substances[i].substance.elem.molar_mass;
+                substances[i].molar_mass = elem_get_uma(substances[i].substance.elem);
             }
 
         }
@@ -365,13 +365,13 @@ size_t _print_substance(const substance_t * const restrict sub, char * buffer, s
 {
     if(sub->is_simple_substance)
     {
-        char symbol_len = get_symbol_len(sub->substance.elem.symbol);
+        char symbol_len = get_symbol_len(elem_get_symbol(sub->substance.elem));
         if(buffer_len <= symbol_len+1)
         {
             return 0;
         }
 
-        print_symbol(sub->substance.elem.symbol, buffer);
+        print_symbol(elem_get_symbol(sub->substance.elem), buffer);
 
         buffer += symbol_len;
         buffer_len -= symbol_len;
@@ -505,7 +505,7 @@ inline long long get_nelems_in_substance(const substance_t * const restrict sub,
 {
     if(sub->is_simple_substance)
     {
-        if(compare_elem_symbols(sub->substance.elem.symbol,elem))
+        if(compare_elem_symbols(elem_get_symbol(sub->substance.elem),elem))
         {
             return 1*sub->amount;
         }

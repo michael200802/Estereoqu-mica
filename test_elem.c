@@ -30,10 +30,10 @@ int main(int argc, char * argv[])
             }
             else
             {
-                printf("%zu: atomic num: %hhu, symbol: %s, mass: %f, {",i,elem.atomic_num,elem.symbol.symbol,elem.molar_mass);
-                for(char i = 0; i < elem.possible_oxistates.n; i++)
+                printf("%zu: atomic num: %hhu, symbol: %s, mass: %f, {",i,elem.atomic_num,elem_get_symbol(elem).symbol,elem_get_uma(elem));
+                for(char i = 0; i < elem_get_oxistates(elem).n; i++)
                 {
-                    printf(" %hhd ",elem.possible_oxistates.states[i]);
+                    printf(" %hhd ",elem_get_oxistates(elem).states[i]);
                 }
                 puts("}\n");
             }
