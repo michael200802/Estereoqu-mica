@@ -1,5 +1,5 @@
 compiler=x86_64-w64-mingw32-gcc
-compiler=gcc
+#compiler=gcc
 
 clean:
 	rm *.o
@@ -46,9 +46,12 @@ test_reaction: test_reaction.c $(types_objf) $(constants_objf)
 #types------------------------------------------------------
 
 #GUI--------------------------------------------------------
-GUI/%.o: GUI/%.c GUI/%.h
+GUI/%.o: GUI/%.c GUI/GUI.h
 	$(compiler) -c $(@:.o=.c) -o $@
 #GUI--------------------------------------------------------
 
-wmain.exe: main.o GUI/WIN.o GUI/input.o GUI/output.o $(types_objf) $(constants_objf)
+main.o: main.c
+	$(compiler) -c $? -o $@
+
+wmain.exe: main.o $(types_objf) $(constants_objf) GUI/WIN.o GUI/input.o GUI/output.o
 	$(compiler) -mwindows -pthread --static $? -o $@
