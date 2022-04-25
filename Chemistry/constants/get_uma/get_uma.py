@@ -1,7 +1,7 @@
 from mendeleev import element
 import os
 
-path = os.path.realpath(__file__).split("/getuma.py").pop(0)
+path = os.path.realpath(__file__).split("/get_uma.py").pop(0)
 
 file = open(path + "/table.h","w")
 

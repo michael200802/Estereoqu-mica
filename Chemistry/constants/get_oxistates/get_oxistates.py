@@ -2,7 +2,7 @@ from mendeleev import element
 from numpy import flexible
 import os
 
-path = os.path.realpath(__file__).split("/getoxistates.py").pop(0)
+path = os.path.realpath(__file__).split("/get_oxistates.py").pop(0)
 
 file = open(path + "/table.h","w")
 
