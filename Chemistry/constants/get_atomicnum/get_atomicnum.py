@@ -19,7 +19,7 @@ atomic_num = 1
 for i in range(0,26*26):
     sym = str(chr(int(i/26) + 65))
     print(sym+"\n")
-    if i%27 != 0:
+    if i%26 != 0:
         sym += str(chr(i%26 + 97))
     try:
         elem = element(sym)
