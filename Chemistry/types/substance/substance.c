@@ -488,6 +488,16 @@ inline void sum_components_of_substance(const components_of_substance_t * const 
     }
 }
 
+inline num_t get_equivalent_number_of_substance(const substance_t * restrict const sub)
+{
+    components_of_substance_t comps;
+    get_components_of_substance(sub,&comps);
+    size_t nH = comps.bucket[1];
+    num_t molar_mass = sub->molar_mass*sub->amount;
+
+    return molar_mass/nH;
+}
+
 inline bool compare_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2)
 {
     for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)

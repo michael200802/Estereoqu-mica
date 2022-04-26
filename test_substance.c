@@ -17,7 +17,13 @@ int main(int argc, char * argv[])
         if(init_substance(argv[i],&sub))
         {
             char buffer[100] = {};
-            printf("%s: %ld %s %lf\n",argv[i],print_substance(&sub,buffer,100),buffer,sub.molar_mass*sub.amount);
+            printf("%s: strlen: %ld, str: %s, molar mass: %lf, equivalent number: %lf\n",
+                argv[i],
+                print_substance(&sub,buffer,100),
+                buffer,
+                sub.molar_mass*sub.amount,
+                get_equivalent_number_of_substance(&sub)
+            );
             destroy_substance(&sub);
         }
         else

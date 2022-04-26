@@ -22,6 +22,9 @@ extern void get_components_of_substance(const substance_t * const restrict sub, 
 
 extern void sum_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2, components_of_substance_t * const result);
 
+//only works for substances with H
+extern num_t get_equivalent_number_of_substance(const substance_t * restrict const sub);
+
 //true if they are equal
 //otherwise it reaturns false
 extern bool compare_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2);
