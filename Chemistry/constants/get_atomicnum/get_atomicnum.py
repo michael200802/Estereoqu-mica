@@ -9,18 +9,18 @@ file = open(path + "/table.h","w")
 header  = '#pragma once\n'
 header += '#include "../../types/types.h"\n'
 header += '\n'
-header += 'atomic_num_t sym_table[26*26] = \n'
+header += 'atomic_num_t sym_table[26*27] = \n'
 header += '{\n'
 
 file.write(header)
 
 atomic_num = 1
 
-for i in range(0,26*26):
-    sym = str(chr(int(i/26) + 65))
+for i in range(0,26*27):
+    sym = str(chr(int(i/27) + 65))
     print(sym+"\n")
-    if i%26 != 0:
-        sym += str(chr(i%26 + 97))
+    if i%27 != 0:
+        sym += str(chr((i%27-1) + 97))
     try:
         elem = element(sym)
     except:
@@ -28,7 +28,7 @@ for i in range(0,26*26):
     else:
         file.write('\t' + str(elem.atomic_number) + "/*" + str(i) + " " + elem.symbol + "==" + sym + "*/")
     
-    if i != 26*26-1:
+    if i != 26*27-1:
         file.write(',\n')
     else:
         file.write('\n')
