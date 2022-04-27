@@ -534,7 +534,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                             if(ctrl_type == CTRL_TYPE_CB)
                             {
                                 HWND hcombobox = (HWND)lParam;
-                                size_t cur_y_pos = CTRLS_VARIABLES_MIN_Y + 5 + LINE_HEIGHT + 5 + LINE_HEIGHT + 5;
+                                size_t cur_y_pos = CTRLS_VARIABLE_HEIGHT*var_ctrl_index + (CTRLS_VARIABLES_MIN_Y + 5 + LINE_HEIGHT + 5 + LINE_HEIGHT + 5);
                                 intptr_t min_ctrl_var_id = ctrl_var_id-ctrl_type;
                                 size_t combobox_cursel = ComboBox_GetCurSel(hcombobox);
                                 if(var_ctrl->op_combobox != NULL || var_ctrl->op_edit != NULL)

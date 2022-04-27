@@ -24,6 +24,19 @@ inline void catstr_to_output_buffer(const char * str, size_t str_len)
     *buf = '\0';
 }
 
+inline void print_num_in_output_buffer(num_t num)
+{
+    char buffer[100];
+    if((long long)(num/1000) == 0)
+    {
+        sprintf(buffer,"%lf",num);
+    }
+    else
+    {
+        sprintf(buffer,"%.3lf",num);
+    }
+}
+
 inline void flush_output_buffer(void)
 {
     pthread_t thread;

@@ -1,5 +1,5 @@
-#compiler=x86_64-w64-mingw32-gcc
-compiler=gcc
+compiler=x86_64-w64-mingw32-gcc
+#compiler=gcc
 
 clean:
 	rm *.o

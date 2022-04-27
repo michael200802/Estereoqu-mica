@@ -53,6 +53,10 @@ int end_input(void); //free resources
 
 void catstr_to_output_buffer(const char * str, size_t str_len); //cats a str to the buffer
 
+void print_num_in_output_buffer(num_t num);
+
+//void print_reaction_in_output_buffer()
+
 void flush_output_buffer(void); //sends the buffer to the GUI
 
 void end_output(void); //free resources
