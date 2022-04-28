@@ -51,7 +51,7 @@ int main(void)
                 const substance_arr_t * cur_subs_arr;
                 const substance_arr_t * const react[2] = {&input.react->reactants,&input.react->products};
                 char units[] = {'m','g','k'};
-                catstr_to_output_buffer("\r\n\r\nReaccion teorica:\r\n\r\n",sizeof("\r\n\r\nReaccion teorica:\r\n\r\n")-1);
+                catstr_to_output_buffer("Reaccion teorica:\r\n\r\n",sizeof("Reaccion teorica:\r\n\r\n")-1);
                 for(size_t units_index = 0; units_index < 3; units_index++)
                 {
                     for(size_t i = 0; i < 2; i++)
