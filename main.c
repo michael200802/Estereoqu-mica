@@ -172,18 +172,21 @@ int main(void)
             //print which is the excess reagent and the limiting reagent
             while(1)
             {
-                //see if all variables of the reactants are ready
+                //see if at least two variables of the reactants are ready
                 {
-                    bool all_ready = true;
+                    unsigned char counter = 0;
                     for(size_t i = 0; i < real_reactants->nsubstances; i++)
                     {
-                        if(real_reactants->substances[i].mol == 0)
+                        if(real_reactants->substances[i].mol != 0)
                         {
-                            all_ready = false;
-                            break;
+                            counter++;
+                            if(counter == 2)
+                            {
+                                break;
+                            }
                         }
                     }
-                    if(all_ready == false)
+                    if(counter < 2)
                     {
                         //kill the while statement
                         break;
@@ -215,7 +218,7 @@ int main(void)
                 if(real_reactants->nsubstances == 2)
                 {
                     size_t excess_reagent_index = (1+limiting_reagent_index)%2;
-                    catstr_to_output_buffer("\r\nReactivo en exceso: ",sizeof("\r\nReactivo limitante: ")-1);
+                    catstr_to_output_buffer("\r\nReactivo en exceso: ",sizeof("\r\nReactivo en exceso: ")-1);
                     {
                         size_t amount = theoretical_reactants->substances[excess_reagent_index].amount;
                         theoretical_reactants->substances[excess_reagent_index].amount = 1;

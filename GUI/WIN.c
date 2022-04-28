@@ -95,23 +95,24 @@ typedef enum {
     GUI_state_t;
 GUI_state_t GUI_state;
 
-//var arrays
+//var ctrl arrays
+typedef enum {CTRl_TYPE_STATIC_TITLE, CTRL_TYPE_EDIT, CTRL_TYPE_CB, CTRL_TYPE_OPTIONAL_EDIT, CTRL_TYPE_OPTIONAL_CB, CTRL_TYPE_STATIC_ERROR} var_arr_ctrl_id_type_t;
 typedef struct
 {
     HWND static_title, edit, combobox, op_edit, op_combobox, static_error;
     bool is_ready;
-}var_ctrl_t;
+}var_ctrl_t;//a bunch of ctrls treated as one ctrl that is used to handle the input of the var
 
 typedef struct
 {
-    var_arr_t var_arr;
-
+    //ctrls
     size_t nctrls;
     var_ctrl_t * ctrls;
 
-}var_arr_ctrls_t;
+    //where the input of the ctrls will be stored after a call to get_all_vars_from_ctrls
+    var_arr_t var_arr;
 
-typedef enum {CTRl_TYPE_STATIC_TITLE, CTRL_TYPE_EDIT, CTRL_TYPE_CB, CTRL_TYPE_OPTIONAL_EDIT, CTRL_TYPE_OPTIONAL_CB, CTRL_TYPE_STATIC_ERROR} var_arr_ctrl_id_type_t;
+}var_arr_ctrls_t;
 
 //global--------------------------------------
 
@@ -205,6 +206,9 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
     }
 }
 
+//returns 0 if one of the ctrls has an error
+//returns 1 if sucess
+//returns -2 if all inputs are '?'
 static inline char get_all_vars_from_ctrls(const var_arr_ctrls_t * const restrict var_arr)
 {
     //Chech if there were any errors
@@ -474,8 +478,9 @@ inline int end_app(void)
 
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    static HINSTANCE hInstance;
+    static HINSTANCE hInstance;//handle of the instance of the program
 
+    //ctrls for the input of the reaction
     static HWND hedit_reactants;
     static HWND hedit_products;
     static HWND hstatic_reactants_title;
@@ -483,9 +488,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     static HWND hbutton_getoutput;
     static HWND hstatic_error;
 
-    static reaction_t react;
-    static bool is_reaction_ready;
+    static reaction_t react;//it stores the reaction
+    static bool is_reaction_ready;//is the reaction ready? (the user has finally put the reaction in the reactants and products edits)
 
+    //ctrls for the input of the data of each substance
     static var_arr_ctrls_t var_arr_ctrls_reactants = {}, var_arr_ctrls_products = {};
     static bool is_var_arr_reactants_ready, is_var_arr_products_ready;
 
@@ -495,12 +501,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         {
             struct
             {
-                char str[1000];
-                size_t len;
-                bool ready;
-            } static edit_reactants_str = {}, edit_products_str = {};
+                char str[1000];//buffer
+                size_t len;//buffer len
+                bool ready;//is its input valid/ready?
+            } static edit_reactants_str = {}, edit_products_str = {};//buffers for the edits of the reaction
 
-            switch(LOWORD(wParam))
+            switch(LOWORD(wParam)/*child window id*/)
             {
                 default://handles Edits and comboboxes of the variables' ctrls
                     {
@@ -662,6 +668,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                         }
                     }
                     break;
+
+                //handles the clicks of the main button
                 case (intptr_t)BUTTON_GETOUTPUT_ID:
                     if(HIWORD(wParam) == BN_CLICKED)
                     {
@@ -679,71 +687,9 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                         }
                     }
                     break;
-                case (intptr_t)EDIT_PRODUCTS_ID:
 
-                    if(HIWORD(wParam) == EN_CHANGE)
-                    {
-                        if(is_var_arr_products_ready)
-                        {
-                            destroy_var_arr_ctrls(&var_arr_ctrls_products);
-                            is_var_arr_products_ready = false;
-                        }
-
-                        edit_products_str.len = Edit_GetTextLength(hedit_products)+1;
-                        if(edit_products_str.len < 1000)
-                        {
-                            Edit_GetText(hedit_products,edit_products_str.str,edit_products_str.len);
-                            edit_products_str.ready = true;
-
-                            if(edit_reactants_str.ready)
-                            {
-                                if(is_reaction_ready)
-                                {
-                                    destroy_reaction(&react);
-                                    is_reaction_ready = init_reaction(edit_reactants_str.str,edit_products_str.str,&react);
-                                    if(is_reaction_ready == false)
-                                    {
-                                        Static_SetText(hstatic_error,"Productos incorrectos.");
-                                    }
-                                }
-                                else
-                                {
-                                    is_reaction_ready = init_reaction(edit_reactants_str.str,edit_products_str.str,&react);
-                                    if(is_reaction_ready == false)
-                                    {
-                                        Static_SetText(hstatic_error,"Reaccion incorrecta.");
-                                    }
-                                }
-                                if(is_reaction_ready)
-                                {
-                                    is_var_arr_products_ready = true;
-                                    Static_SetText(hstatic_error,"Todo en orden.");
-
-                                    init_var_arr_ctrls(react.products,CTRLS_VARIABLES_PRODUCTS_X,hWnd,hInstance,&var_arr_ctrls_products);
-                                    is_var_arr_products_ready = true;
-
-                                    if(is_var_arr_reactants_ready == false)
-                                    {
-                                        init_var_arr_ctrls(react.reactants,CTRLS_VARIABLES_REACTANTS_X,hWnd,hInstance,&var_arr_ctrls_reactants);
-                                        is_var_arr_reactants_ready = true;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Static_SetText(hstatic_error,"Faltan los reactivos.");
-                            }
-                        }
-                        else
-                        {
-                            Static_SetText(hstatic_error,"Productos demasiado largos.");
-                            edit_products_str.ready = false;
-                        }
-                    }
-
-                    break;
+                //handles the input of the reaction
                 case (intptr_t)EDIT_REACTANTS_ID:
-
                     if(HIWORD(wParam) == EN_CHANGE)
                     {
                         if(is_var_arr_reactants_ready)
@@ -803,12 +749,73 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                             edit_reactants_str.ready = false;
                         }
                     }
-
                     break;
+                case (intptr_t)EDIT_PRODUCTS_ID:
+                    if(HIWORD(wParam) == EN_CHANGE)
+                    {
+                        if(is_var_arr_products_ready)
+                        {
+                            destroy_var_arr_ctrls(&var_arr_ctrls_products);
+                            is_var_arr_products_ready = false;
+                        }
+
+                        edit_products_str.len = Edit_GetTextLength(hedit_products)+1;
+                        if(edit_products_str.len < 1000)
+                        {
+                            Edit_GetText(hedit_products,edit_products_str.str,edit_products_str.len);
+                            edit_products_str.ready = true;
+
+                            if(edit_reactants_str.ready)
+                            {
+                                if(is_reaction_ready)
+                                {
+                                    destroy_reaction(&react);
+                                    is_reaction_ready = init_reaction(edit_reactants_str.str,edit_products_str.str,&react);
+                                    if(is_reaction_ready == false)
+                                    {
+                                        Static_SetText(hstatic_error,"Productos incorrectos.");
+                                    }
+                                }
+                                else
+                                {
+                                    is_reaction_ready = init_reaction(edit_reactants_str.str,edit_products_str.str,&react);
+                                    if(is_reaction_ready == false)
+                                    {
+                                        Static_SetText(hstatic_error,"Reaccion incorrecta.");
+                                    }
+                                }
+                                if(is_reaction_ready)
+                                {
+                                    is_var_arr_products_ready = true;
+                                    Static_SetText(hstatic_error,"Todo en orden.");
+
+                                    init_var_arr_ctrls(react.products,CTRLS_VARIABLES_PRODUCTS_X,hWnd,hInstance,&var_arr_ctrls_products);
+                                    is_var_arr_products_ready = true;
+
+                                    if(is_var_arr_reactants_ready == false)
+                                    {
+                                        init_var_arr_ctrls(react.reactants,CTRLS_VARIABLES_REACTANTS_X,hWnd,hInstance,&var_arr_ctrls_reactants);
+                                        is_var_arr_reactants_ready = true;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Static_SetText(hstatic_error,"Faltan los reactivos.");
+                            }
+                        }
+                        else
+                        {
+                            Static_SetText(hstatic_error,"Productos demasiado largos.");
+                            edit_products_str.ready = false;
+                        }
+                    }
+                    break;
+                //handles the input of the reaction
             }
         }
         break;
-    case WM_CREATE:
+    case WM_CREATE://inits the main window
         {
             sem_t * app_loop_sem = ((CREATESTRUCT*)lParam)->lpCreateParams;
 
@@ -978,25 +985,27 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_DESTROY:
-        if(is_reaction_ready)
+    case WM_DESTROY://free resources and the quit
         {
-            destroy_reaction(&react);
+            if(is_reaction_ready)
+            {
+                destroy_reaction(&react);
+            }
+            if(is_var_arr_products_ready)
+            {
+                destroy_var_arr_ctrls(&var_arr_ctrls_products);
+            }
+            if(is_var_arr_reactants_ready)
+            {
+                destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
+            }
+            send_endwnd_signal();//we are done here
+            PostQuitMessage(0);//bye bye
         }
-        if(is_var_arr_products_ready)
-        {
-            destroy_var_arr_ctrls(&var_arr_ctrls_products);
-        }
-        if(is_var_arr_reactants_ready)
-        {
-            destroy_var_arr_ctrls(&var_arr_ctrls_reactants);
-        }
-        send_endwnd_signal();
-        PostQuitMessage(0);
     default:
-        return DefWindowProc(hWnd,Msg,wParam,lParam);
+        return DefWindowProc(hWnd,Msg,wParam,lParam);//I don't know how to handle this, lets handle it by default
     }
-    return 0;
+    return 0;//everything is fine here
 }
 
 void * app_loop(void * hwnd)
