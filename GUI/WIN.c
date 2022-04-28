@@ -1054,7 +1054,7 @@ void * app_loop(void * hwnd)
         (
             0,
             MAIN_WND_CLASSNAME,
-            "COCA",
+            "Mochi",
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
