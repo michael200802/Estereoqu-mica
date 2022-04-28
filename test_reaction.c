@@ -17,36 +17,40 @@ int main(int argc, char * argv[])
 
     for(size_t i = 1; i < argc; i++)
     {
-        if(init_reaction(argv[i-1],argv[i],&react))
+        reaction_err_t returnerr = init_balanced_reaction(argv[i-1],argv[i],&react);
+        switch(returnerr)
         {
-            printf("Given:   %s ---> %s\n",argv[i-1],argv[i]);
+            case REACTION_ERR_INIT_UNBALANCED:
+                puts("Sin balancear.");
+                break;    
+            case REACTION_ERR_INIT_SUCCESS:
+                printf("Given:   %s ---> %s\n",argv[i-1],argv[i]);
 
-            printf("Program: ");
-            for(size_t j = 0; j < react.reactants.nsubstances; j++)
-            {
-                print_substance(&react.reactants.substances[j],buffer,100);
-                printf("%s",buffer);
-                if(j+1 != react.reactants.nsubstances)
+                printf("Program: ");
+                for(size_t j = 0; j < react.reactants.nsubstances; j++)
                 {
-                    printf(" + ");
+                    print_substance(&react.reactants.substances[j],buffer,100);
+                    printf("%s",buffer);
+                    if(j+1 != react.reactants.nsubstances)
+                    {
+                        printf(" + ");
+                    }
                 }
-            }
-            printf(" ---> ");
-            for(size_t j = 0; j < react.products.nsubstances; j++)
-            {
-                print_substance(&react.products.substances[j],buffer,100);
-                printf("%s",buffer);
-                if(j+1 != react.products.nsubstances)
+                printf(" ---> ");
+                for(size_t j = 0; j < react.products.nsubstances; j++)
                 {
-                    printf(" + ");
+                    print_substance(&react.products.substances[j],buffer,100);
+                    printf("%s",buffer);
+                    if(j+1 != react.products.nsubstances)
+                    {
+                        printf(" + ");
+                    }
                 }
-            }
-            putchar('\n');
-        }
-        else
-        {
-            puts("Boludo, pon bien");
-            return 0;
+                putchar('\n');
+                break;
+            case REACTION_ERR_INIT_UNKNOWN_SYMBOL:
+                puts("Boludo, pon bien");
+                return 0;
         }
     }
 

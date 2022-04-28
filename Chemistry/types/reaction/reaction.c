@@ -1,6 +1,15 @@
 #include "reaction.h"
 
-bool init_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react)
+reaction_err_t init_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react, bool balance)
+{
+    if(balance)
+    {
+        //do something xd
+    }
+    return init_balanced_reaction(_reactants,_products,react);
+}
+
+reaction_err_t init_balanced_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react)
 {
     size_t nreactants = 0;
     size_t nproducts = 0;
@@ -24,7 +33,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
 
                 if(is_str_substance(&_reactants[substance_index],i-substance_index) == false)
                 {
-                    return false;
+                    return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
                 }
 
                 nreactants++;
@@ -43,7 +52,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
                         {
                             continue;
                         }
-                        return false;
+                        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
                     }
 
                 case '+':
@@ -54,7 +63,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
                     }
                     if(_reactants[i] == '+' || _reactants[i] == '\0')
                     {
-                        return false;
+                        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
                     }
 
             }
@@ -77,7 +86,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
 
                 if(is_str_substance(&_products[substance_index],i-substance_index) == false)
                 {
-                    return false;
+                    return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
                 }
                 nproducts++;
             }
@@ -94,7 +103,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
                         {
                             continue;
                         }
-                        return false;
+                        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
                     }
 
                 case '+':
@@ -104,26 +113,26 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
                     }while(isspace(_products[i]));
                     if(_products[i] == '+' || _products[i] == '\0')
                     {
-                        return false;
+                        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
                     }
             }
         }
     }
     if(nreactants == 0 || nproducts == 0)
     {
-        return false;
+        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
     }
     char * reactants;
     char * products;
     reactants = strdup(_reactants);
     if(reactants == NULL)
     {
-        return false;
+        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
     }
     products = strdup(_products);
     if(products == NULL)
     {
-        return false;
+        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
     }
 
     char * strtok_buffer;
@@ -134,7 +143,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
         //free input strings
         free(products);
         free(reactants);
-        return false;
+        return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
     }
 
     strtok_buffer = reactants;
@@ -149,14 +158,14 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
             //free input strings
             free(products);
             free(reactants);
-            return false;
+            return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
         }
     }
     react->reactants.nsubstances = nreactants;
     react->reactants.substances = malloc(sizeof(substance_t)*nreactants);
     for(size_t i = 0; i < nreactants; i++)
     {
-        if(init_substance(tokens[i],&react->reactants.substances[i]) == false)//just in case... I know it isn't useful now but in the future it may be so
+        if(init_substance(tokens[i],&react->reactants.substances[i]) == REACTION_ERR_INIT_UNKNOWN_SYMBOL)//just in case... I know it isn't useful now but in the future it may be so
         {
             for(size_t j = 0; j < i; j++)//free reactants already created
             {
@@ -169,7 +178,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
             //free input strings
             free(products);
             free(reactants);
-            return false;
+            return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
         } 
     }
 
@@ -192,14 +201,14 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
             free(products);
             free(reactants);
 
-            return false;
+            return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
         }
     }
     react->products.nsubstances = nproducts;
     react->products.substances = malloc(sizeof(substance_t)*nproducts);
     for(size_t i = 0; i < nproducts; i++)
     {
-        if(init_substance(tokens[i],&react->products.substances[i]) == false)
+        if(init_substance(tokens[i],&react->products.substances[i]) == REACTION_ERR_INIT_UNKNOWN_SYMBOL)
         {
             free(tokens);//free tokens
 
@@ -219,7 +228,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
             free(products);
             free(reactants);
 
-            return false;
+            return REACTION_ERR_INIT_UNKNOWN_SYMBOL;
         }
     }
 
@@ -250,10 +259,9 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
             //free input strings
             free(products);
             free(reactants);
-            return false;
+            return REACTION_ERR_INIT_UNBALANCED;
         }
     }
-    
 
     free(tokens);//free tokens
 
@@ -261,7 +269,7 @@ bool init_reaction(const char * restrict _reactants, const char * restrict _prod
     free(products);
     free(reactants);
 
-    return true;
+    return REACTION_ERR_INIT_SUCCESS;
 }
 
 inline void destroy_reaction(reaction_t * restrict const react)
