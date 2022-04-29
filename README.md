@@ -7,7 +7,7 @@ Como compilar?
 	Debes tener las siguentes herramientas:
 		python 3.9.10 
 		mendeleev 0.9.0
-		gcc (which must include WINAPI and POSIX threads)
+		gcc de mingw (con el paquete de los POSIX threads instalado)
 		make
 	Luego, en la terminal, ejecuta el comando "make wmain.exe"
 	wmain.exe sera el programa resultante.
@@ -29,7 +29,7 @@ How to compile?
 	You must have these tools:
 		python 3.9.10 
 		mendeleev 0.9.0
-		gcc (which must include WINAPI and POSIX threads)
+		a C/C++ compiler (which must include WINAPI and POSIX threads, such as gcc of mingw)
 		make
 	Then, you just have to type "make wmain.exe".
 	wmain.exe will be the final program.
