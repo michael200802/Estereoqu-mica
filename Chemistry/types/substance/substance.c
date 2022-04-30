@@ -486,7 +486,7 @@ inline void sum_components_of_substance(const components_of_substance_t * const 
     for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)
     {
         result->bucket[i] = comp1->bucket[i] + comp2->bucket[i];
-        result->ncomponents = (result->bucket[i] != 0 ? result->ncomponents+1 : 0);
+        result->ncomponents += (result->bucket[i] != 0);
     }
 }
 
@@ -506,11 +506,17 @@ inline bool compare_components_of_substance(const components_of_substance_t * co
     {
         return false;
     }
-    for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)
+    size_t i = 0, n_unchecked_comps = comp1->ncomponents;
+    while(n_unchecked_comps != 0)
     {
+        i++;
         if(comp1->bucket[i] != comp2->bucket[i])
         {
             return false;
+        }
+        else if(comp1->bucket[i] != 0)
+        {
+            n_unchecked_comps--;
         }
     }
     return true;
