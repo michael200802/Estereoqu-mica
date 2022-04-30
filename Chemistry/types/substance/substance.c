@@ -482,9 +482,11 @@ inline void get_components_of_substance(const substance_t * const restrict sub, 
 
 inline void sum_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2, components_of_substance_t * const result)
 {
+    result->ncomponents = 0;
     for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)
     {
         result->bucket[i] = comp1->bucket[i] + comp2->bucket[i];
+        result->ncomponents = (result->bucket[i] != 0 ? result->ncomponents+1 : 0);
     }
 }
 
@@ -500,6 +502,10 @@ inline num_t get_equivalent_number_of_substance(const substance_t * restrict con
 
 inline bool compare_components_of_substance(const components_of_substance_t * const comp1, const components_of_substance_t * const comp2)
 {
+    if(comp1->ncomponents != comp2->ncomponents)
+    {
+        return false;
+    }
     for(size_t i = 1; i <= NUMBER_OF_ELEMENTS; i++)
     {
         if(comp1->bucket[i] != comp2->bucket[i])
