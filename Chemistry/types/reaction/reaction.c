@@ -2,15 +2,6 @@
 
 reaction_err_t init_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react, bool balance)
 {
-    if(balance)
-    {
-        //do something xd
-    }
-    return init_balanced_reaction(_reactants,_products,react);
-}
-
-reaction_err_t init_balanced_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react)
-{
     size_t nreactants = 0;
     size_t nproducts = 0;
     {
@@ -232,24 +223,15 @@ reaction_err_t init_balanced_reaction(const char * restrict _reactants, const ch
         }
     }
 
-    {//see whether they have the same components
-        components_of_substance_t reactants_comp = {};
-        components_of_substance_t products_comp = {};
-        components_of_substance_t aux;
-
-        for(size_t i = 0; i < react->reactants.nsubstances; i++)
+    {//see whether they have the same components or we have to balance the reaction
+        /*
+        if(balance)
         {
-            get_components_of_substance(&react->reactants.substances[i],&aux);
-            sum_components_of_substance(&aux,&reactants_comp,&reactants_comp);
+            balance_reaction(react);
         }
-
-        for(size_t i = 0; i < react->products.nsubstances; i++)
-        {
-            get_components_of_substance(&react->products.substances[i],&aux);
-            sum_components_of_substance(&aux,&products_comp,&products_comp);
-        }
-
-        if(compare_components_of_substance(&reactants_comp,&products_comp) == false)
+        else*/
+        balance_reaction(react);
+        if(is_reaction_balanced(react) == false)
         {
             //destroy the just created reaction
             destroy_reaction(react);
@@ -270,6 +252,31 @@ reaction_err_t init_balanced_reaction(const char * restrict _reactants, const ch
     free(reactants);
 
     return REACTION_ERR_INIT_SUCCESS;
+}
+
+inline bool is_reaction_balanced(const reaction_t * restrict const react)
+{
+    components_of_substance_t reactants_comp = {};
+    components_of_substance_t products_comp = {};
+    components_of_substance_t aux;
+
+    for(size_t i = 0; i < react->reactants.nsubstances; i++)
+    {
+        get_components_of_substance(&react->reactants.substances[i],&aux);
+        sum_components_of_substance(&reactants_comp,&aux,&reactants_comp);
+    }
+    for(size_t i = 0; i < react->products.nsubstances; i++)
+    {
+        get_components_of_substance(&react->products.substances[i],&aux);
+        sum_components_of_substance(&products_comp,&aux,&products_comp);
+    }
+
+    return compare_components_of_substance(&reactants_comp,&products_comp);
+}
+
+inline reaction_err_t init_balanced_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react)
+{
+    return init_reaction(_reactants,_products,react,false);
 }
 
 inline void destroy_reaction(reaction_t * restrict const react)

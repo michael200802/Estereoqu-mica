@@ -29,10 +29,10 @@ Chemistry/types/elem/elem.o: Chemistry/types/elem/elem.h Chemistry/types/elem/el
 Chemistry/types/substance/substance.o: Chemistry/types/substance/substance.c Chemistry/types/substance/substance.h Chemistry/types/elem/elem.o
 	$(compiler) -c Chemistry/types/substance/substance.c -o $@
 
-Chemistry/types/reaction/reaction.o: Chemistry/types/reaction/reaction.c Chemistry/types/reaction/reaction.h Chemistry/types/substance/substance.o
-	$(compiler) -c Chemistry/types/reaction/reaction.c -o $@
+Chemistry/types/reaction/%.o: Chemistry/types/reaction/%.c Chemistry/types/reaction/reaction.h Chemistry/types/substance/substance.o
+	$(compiler) -c $(@:.o=.c) -o $@
 
-types_objf:=Chemistry/types/reaction/reaction.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o
+types_objf:=Chemistry/types/reaction/reaction.o Chemistry/types/reaction/balancer.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o
 
 test_elem: test_elem.c Chemistry/types/elem/elem.o $(constants_objf)
 	$(compiler) $? -o $@
