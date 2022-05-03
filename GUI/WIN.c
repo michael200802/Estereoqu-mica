@@ -489,11 +489,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     static HWND hstatic_error;
 
     static reaction_t react;//it stores the reaction
-    static enum {reaction_nonready = false, reaction_ready = true, reaction_unbalanced} is_reaction_ready;//is the reaction ready? (the user has finally put the reaction in the reactants and products edits)
+    static enum {reaction_nonready = false, reaction_ready = true, reaction_unbalanced} is_reaction_ready = reaction_nonready;//is the reaction ready? (the user has finally put the reaction in the reactants and products edits)
 
     //ctrls for the input of the data of each substance
     static var_arr_ctrls_t var_arr_ctrls_reactants = {}, var_arr_ctrls_products = {};
-    static bool is_var_arr_reactants_ready, is_var_arr_products_ready;
+    static bool is_var_arr_reactants_ready = false, is_var_arr_products_ready = false;
 
     switch (Msg)
     {
@@ -673,7 +673,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                 case (intptr_t)BUTTON_GETOUTPUT_ID:
                     if(HIWORD(wParam) == BN_CLICKED)
                     {
-                        if(is_reaction_ready == reaction_nonready)
+                        if(is_reaction_ready == reaction_ready)
                         {
                             char vars_reactants = get_all_vars_from_ctrls(&var_arr_ctrls_reactants);
                             char vars_products = get_all_vars_from_ctrls(&var_arr_ctrls_products);
@@ -687,7 +687,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                         }
                         else if(is_reaction_ready == reaction_unbalanced)
                         {
-                            
+
                         }
                     }
                     break;
@@ -710,7 +710,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 
                             if(edit_products_str.ready)
                             {
-                                if(is_reaction_ready)
+                                if(is_reaction_ready == reaction_ready)
                                 {
                                     destroy_reaction(&react);
                                     switch(init_balanced_reaction(edit_reactants_str.str,edit_products_str.str,&react))
@@ -742,7 +742,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                             break;
                                     }
                                 }
-                                if(is_reaction_ready)
+                                if(is_reaction_ready == reaction_ready)
                                 {
                                     is_var_arr_reactants_ready = true;
                                     Static_SetText(hstatic_error,"Todo en orden.");
@@ -786,7 +786,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 
                             if(edit_reactants_str.ready)
                             {
-                                if(is_reaction_ready)
+                                if(is_reaction_ready == reaction_ready)
                                 {
                                     destroy_reaction(&react);
                                     switch(init_balanced_reaction(edit_reactants_str.str,edit_products_str.str,&react))
@@ -818,7 +818,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                             break;
                                     }
                                 }
-                                if(is_reaction_ready)
+                                if(is_reaction_ready == reaction_ready)
                                 {
                                     is_var_arr_products_ready = true;
                                     Static_SetText(hstatic_error,"Todo en orden.");
@@ -1021,7 +1021,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         break;
     case WM_DESTROY://free resources and the quit
         {
-            if(is_reaction_ready)
+            if(is_reaction_ready == reaction_ready)
             {
                 destroy_reaction(&react);
             }
