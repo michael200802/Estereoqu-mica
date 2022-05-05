@@ -224,24 +224,58 @@ reaction_err_t init_reaction(const char * restrict _reactants, const char * rest
     }
 
     {//see whether they have the same components or we have to balance the reaction
-        /*
         if(balance)
         {
-            balance_reaction(react);
+            switch(balance_reaction(react))
+            {
+                case REACTION_ERR_BALANCE_SUCESS:
+                    break;
+                case REACTION_ERR_BALANCE_ALREADY_BALANCED:
+                    break;
+                case REACTION_ERR_BALANCE_CANNOT_BALANCE:
+                    {
+                        //destroy the just created reaction
+                        destroy_reaction(react);
+
+                        free(tokens);//free tokens
+
+                        //free input strings
+                        free(products);
+                        free(reactants);
+                        return REACTION_ERR_INIT_CANNOT_BALANCE;
+                    }
+            }
         }
-        else*/
-        balance_reaction(react);
-        if(is_reaction_balanced(react) == false)
+        else 
         {
-            //destroy the just created reaction
-            destroy_reaction(react);
+            is_reaction_balanced_returnv_t is_balanced = is_reaction_balanced(react);
+            switch(is_balanced)
+            {
+                case REACTION_IS_NOT_BALANCED:
+                    {
+                        //destroy the just created reaction
+                        destroy_reaction(react);
 
-            free(tokens);//free tokens
+                        free(tokens);//free tokens
 
-            //free input strings
-            free(products);
-            free(reactants);
-            return REACTION_ERR_INIT_UNBALANCED;
+                        //free input strings
+                        free(products);
+                        free(reactants);
+                        return REACTION_ERR_INIT_UNBALANCED;
+                    }
+                case REACTION_CANNOT_BE_BALANCED:
+                    {
+                        //destroy the just created reaction
+                        destroy_reaction(react);
+
+                        free(tokens);//free tokens
+
+                        //free input strings
+                        free(products);
+                        free(reactants);
+                        return REACTION_ERR_INIT_CANNOT_BALANCE;
+                    }
+            }
         }
     }
 
@@ -254,7 +288,7 @@ reaction_err_t init_reaction(const char * restrict _reactants, const char * rest
     return REACTION_ERR_INIT_SUCCESS;
 }
 
-inline bool is_reaction_balanced(const reaction_t * restrict const react)
+inline is_reaction_balanced_returnv_t is_reaction_balanced(const reaction_t * restrict const react)
 {
     components_of_substance_t reactants_comp = {};
     components_of_substance_t products_comp = {};
@@ -271,7 +305,11 @@ inline bool is_reaction_balanced(const reaction_t * restrict const react)
         sum_components_of_substance(&products_comp,&aux,&products_comp);
     }
 
-    return compare_components_of_substance(&reactants_comp,&products_comp);
+    if(compare_components_of_substance(&reactants_comp,&products_comp) == false)
+    {
+        return (reactants_comp.ncomponents != products_comp.ncomponents ? REACTION_CANNOT_BE_BALANCED : REACTION_IS_NOT_BALANCED);
+    }
+    return REACTION_IS_BALANCED;
 }
 
 inline reaction_err_t init_balanced_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react)

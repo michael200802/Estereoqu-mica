@@ -15,7 +15,7 @@ clean:
 #constants--------------------------------------------------
 
 Chemistry/constants/%.o: Chemistry/constants/%.c Chemistry/constants/%.h Chemistry/constants/%.py
-	python $(@:.o=.py)
+#	python $(@:.o=.py)
 	$(compiler) -c $(@:.o=.c) -o $@
 
 constants_objf:=Chemistry/constants/get_elem_symbol/get_elem_symbol.o Chemistry/constants/get_atomicnum/get_atomicnum.o Chemistry/constants/get_oxistates/get_oxistates.o Chemistry/constants/get_uma/get_uma.o

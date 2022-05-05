@@ -17,11 +17,14 @@ int main(int argc, char * argv[])
 
     for(size_t i = 1; i < argc; i++)
     {
-        reaction_err_t returnerr = init_balanced_reaction(argv[i-1],argv[i],&react);
+        reaction_err_t returnerr = init_reaction(argv[i-1],argv[i],&react,true);
         switch(returnerr)
         {
             case REACTION_ERR_INIT_UNBALANCED:
                 puts("Sin balancear.");
+                break; 
+            case REACTION_ERR_INIT_CANNOT_BALANCE:
+                puts("No es posible balancear.");
                 break;    
             case REACTION_ERR_INIT_SUCCESS:
                 printf("Given:   %s ---> %s\n",argv[i-1],argv[i]);
