@@ -687,7 +687,59 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                         }
                         else if(is_reaction_ready == reaction_unbalanced)
                         {
+                            switch(init_reaction(edit_reactants_str.str,edit_products_str.str,&react,true))
+                            {
+                                case REACTION_ERR_INIT_CANNOT_BALANCE:
+                                    is_reaction_ready = reaction_nonready;
+                                    Static_SetText(hstatic_error,"Reaccion imposible de balancear.");
+                                    break;
+                                case REACTION_ERR_INIT_UNKNOWN_SYMBOL:
+                                    is_reaction_ready = reaction_nonready;
+                                    Static_SetText(hstatic_error,"Sintaxis incorrecta.");
+                                    break;
+                                case REACTION_ERR_INIT_SUCCESS:
+                                    {
+                                        edit_reactants_str.str[0] = '\0';
+                                        edit_reactants_str.len = 0;
+                                        edit_reactants_str.ready = true;
 
+                                        edit_products_str.str[0] = '\0';
+                                        edit_products_str.len = 0;
+                                        edit_products_str.ready = true;
+                                        
+                                        for(size_t i = 0; i < react.reactants.nsubstances; i++)
+                                        {
+                                            edit_reactants_str.len += print_substance(&react.reactants.substances[i],edit_reactants_str.str+edit_reactants_str.len,1000-edit_reactants_str.len);
+                                            if(i+1 != react.reactants.nsubstances)
+                                            {
+                                                edit_reactants_str.str[edit_reactants_str.len+0] = ' ';
+                                                edit_reactants_str.str[edit_reactants_str.len+1] = '+';
+                                                edit_reactants_str.str[edit_reactants_str.len+2] = ' ';
+                                                edit_reactants_str.str[edit_reactants_str.len+3] = '\0';
+
+                                                edit_reactants_str.len += 3;
+                                            }
+                                        }
+
+                                        for(size_t i = 0; i < react.products.nsubstances; i++)
+                                        {
+                                            edit_products_str.len += print_substance(&react.products.substances[i],edit_products_str.str+edit_products_str.len,1000-edit_products_str.len);
+                                            if(i+1 != react.products.nsubstances)
+                                            {
+                                                edit_products_str.str[edit_products_str.len+0] = ' ';
+                                                edit_products_str.str[edit_products_str.len+1] = '+';
+                                                edit_products_str.str[edit_products_str.len+2] = ' ';
+                                                edit_products_str.str[edit_products_str.len+3] = '\0';
+
+                                                edit_products_str.len += 3;
+                                            }
+                                        }
+
+                                        Edit_SetText(hedit_reactants,edit_reactants_str.str);
+                                        Edit_SetText(hedit_products,edit_products_str.str);
+                                    }
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -715,6 +767,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                     destroy_reaction(&react);
                                     switch(init_balanced_reaction(edit_reactants_str.str,edit_products_str.str,&react))
                                     {
+                                        case REACTION_ERR_INIT_CANNOT_BALANCE:
+                                            is_reaction_ready = reaction_nonready;
+                                            Static_SetText(hstatic_error,"Reaccion imposible de balancear.");
+                                            break;
                                         case REACTION_ERR_INIT_UNBALANCED:
                                             is_reaction_ready = reaction_unbalanced;
                                             Static_SetText(hstatic_error,"Reaccion no balanceada.");
@@ -727,8 +783,16 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 }
                                 else
                                 {
+                                    if(is_reaction_ready == reaction_unbalanced)
+                                    {
+                                        Button_SetText(hbutton_getoutput,"Resolver");
+                                    }
                                     switch(init_balanced_reaction(edit_reactants_str.str,edit_products_str.str,&react))
                                     {
+                                        case REACTION_ERR_INIT_CANNOT_BALANCE:
+                                            is_reaction_ready = reaction_nonready;
+                                            Static_SetText(hstatic_error,"Reaccion imposible de balancear.");
+                                            break;
                                         case REACTION_ERR_INIT_UNBALANCED:
                                             is_reaction_ready = reaction_unbalanced;
                                             Static_SetText(hstatic_error,"Reaccion no balanceada.");
@@ -755,6 +819,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                         init_var_arr_ctrls(react.products,CTRLS_VARIABLES_PRODUCTS_X,hWnd,hInstance,&var_arr_ctrls_products);
                                         is_var_arr_products_ready = true;
                                     }
+                                }
+                                else if(is_reaction_ready == reaction_unbalanced)
+                                {
+                                    Button_SetText(hbutton_getoutput,"Balancear");
                                 }
                             }
                             else
@@ -791,6 +859,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                     destroy_reaction(&react);
                                     switch(init_balanced_reaction(edit_reactants_str.str,edit_products_str.str,&react))
                                     {
+                                        case REACTION_ERR_INIT_CANNOT_BALANCE:
+                                            is_reaction_ready = reaction_nonready;
+                                            Static_SetText(hstatic_error,"Reaccion imposible de balancear.");
+                                            break;
                                         case REACTION_ERR_INIT_UNBALANCED:
                                             is_reaction_ready = reaction_unbalanced;
                                             Static_SetText(hstatic_error,"Reaccion no balanceada.");
@@ -803,8 +875,16 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 }
                                 else
                                 {
+                                    if(is_reaction_ready == reaction_unbalanced)
+                                    {
+                                        Button_SetText(hbutton_getoutput,"Resolver");
+                                    }
                                     switch(init_balanced_reaction(edit_reactants_str.str,edit_products_str.str,&react))
                                     {
+                                        case REACTION_ERR_INIT_CANNOT_BALANCE:
+                                            is_reaction_ready = reaction_nonready;
+                                            Static_SetText(hstatic_error,"Reaccion imposible de balancear.");
+                                            break;
                                         case REACTION_ERR_INIT_UNBALANCED:
                                             is_reaction_ready = reaction_unbalanced;
                                             Static_SetText(hstatic_error,"Reaccion no balanceada.");
@@ -831,6 +911,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                         init_var_arr_ctrls(react.reactants,CTRLS_VARIABLES_REACTANTS_X,hWnd,hInstance,&var_arr_ctrls_reactants);
                                         is_var_arr_reactants_ready = true;
                                     }
+                                }
+                                else if(is_reaction_ready == reaction_unbalanced)
+                                {
+                                    Button_SetText(hbutton_getoutput,"Balancear");
                                 }
                             }
                             else
