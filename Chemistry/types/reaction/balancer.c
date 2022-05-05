@@ -153,11 +153,15 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
         for(size_t i = 0; i < cur_row; i++)
         {
             ssize_t cur_elem_to_make_zero = matrix[i][cur_col];
+            ssize_t cur_elem_of_diagonal = matrix[cur_row][cur_col];
+            if(cur_elem_of_diagonal == 0)
+            {
+                return false;
+            }
             if(cur_elem_to_make_zero == 0)
             {
                 continue;
             }
-            ssize_t cur_elem_of_diagonal = matrix[cur_row][cur_col];
             ssize_t lcm = get_lcm(cur_elem_to_make_zero,cur_elem_of_diagonal);
             ssize_t cur_elem_of_diagonal_multiplier = lcm/cur_elem_of_diagonal;
             ssize_t cur_elem_to_make_zero_multiplier = lcm/cur_elem_to_make_zero;

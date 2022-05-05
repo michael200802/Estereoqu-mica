@@ -692,10 +692,12 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                 case REACTION_ERR_INIT_CANNOT_BALANCE:
                                     is_reaction_ready = reaction_nonready;
                                     Static_SetText(hstatic_error,"Reaccion imposible de balancear.");
+                                    Button_SetText(hbutton_getoutput,"Resolver");
                                     break;
                                 case REACTION_ERR_INIT_UNKNOWN_SYMBOL:
                                     is_reaction_ready = reaction_nonready;
                                     Static_SetText(hstatic_error,"Sintaxis incorrecta.");
+                                    Button_SetText(hbutton_getoutput,"Resolver");
                                     break;
                                 case REACTION_ERR_INIT_SUCCESS:
                                     {
