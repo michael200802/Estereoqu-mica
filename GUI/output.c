@@ -55,6 +55,7 @@ inline void flush_output_buffer(void)
         msg_app("Error critico:","pthread_create() ha fallado.");
         exit(EXIT_FAILURE);
     }
+    pthread_detach(thread);
 
     sem_wait(&sem);
 
