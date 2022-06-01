@@ -21,7 +21,7 @@ int main(void)
             default:
                 msg_app("Error en el input.","Se le comunicara el error al Michu.");
             case INPUT_ERROR_WND_CLOSED:
-                msg_app("Vuelva pronto,","Adios.");
+                msg_app("Vuelva pronto,","Adios, profe Fer, gracias por su tiempo.");
                 return end_app();           
         }
 

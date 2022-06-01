@@ -173,7 +173,7 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
             x_pos + (CTRLS_VARIABLE_WIDTH-CTRLS_VARIABLE_WIDTH*0.2),
             cur_y_pos + 5 + LINE_HEIGHT + 5,
             CTRLS_VARIABLE_WIDTH*0.2,
-            LINE_HEIGHT*6,
+            LINE_HEIGHT*7,
             hMainWnd,
             CTRLS_VARIABLE_ID(x_pos+i*CTRLS_VARIABLE_DIVISOR + CTRL_TYPE_CB),
             hIns,
@@ -184,6 +184,14 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
         ComboBox_AddString(var_arr->ctrls[i].combobox,"kg");
         ComboBox_AddString(var_arr->ctrls[i].combobox,"M");
         ComboBox_AddString(var_arr->ctrls[i].combobox,"m");
+        {
+            components_of_substance_t comps;
+            get_components_of_substance(&subs.substances[i],&comps);
+            if(comps.bucket[1] > 0)
+            {
+                ComboBox_AddString(var_arr->ctrls[i].combobox,"N");
+            }
+        }
         ComboBox_SetCurSel(var_arr->ctrls[i].combobox,0);
 
         var_arr->ctrls[i].op_edit = var_arr->ctrls[i].op_combobox = NULL;
@@ -252,6 +260,24 @@ static inline char get_all_vars_from_ctrls(const var_arr_ctrls_t * const restric
                     var_arr->var_arr.substances[i].mol = num / var_arr->var_arr.substances[i].molar_mass;
                     var_arr->var_arr.substances[i].unit = 'k';
                     break;
+                case 5://N
+                    {
+                        components_of_substance_t comps;
+                        char buffer[1000];
+                        substance_t subs;
+
+                        Static_GetText(var_arr->ctrls[i].static_title,buffer,1000);
+                        init_substance(buffer,&subs);
+                        get_components_of_substance(&subs,&comps);
+
+                        if(comps.bucket[1] == 0)
+                        {
+                            break;
+                        }
+
+                        num /= comps.bucket[1];
+                        num *= var_arr->var_arr.substances[i].molar_mass;
+                    }
                 case 3://M
                 case 4://m
                     var_arr->var_arr.substances[i].mol = num;
@@ -554,7 +580,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                         SendMessage(hWnd,WM_COMMAND,MAKEWPARAM(min_ctrl_var_id+CTRL_TYPE_EDIT,EN_CHANGE),(LPARAM)var_ctrl->edit);
                                     }
                                 }
-                                if(combobox_cursel == 3 || combobox_cursel == 4)
+                                if(combobox_cursel > 2)//combobox_cursel shall be 5, 4 or 3
                                 {
                                     size_t cur_x_pos = (min_ctrl_var_id < CTRLS_VARIABLES_PRODUCTS_X ? CTRLS_VARIABLES_REACTANTS_X : CTRLS_VARIABLES_PRODUCTS_X);
                                     var_ctrl->op_edit = CreateWindowEx(
@@ -587,6 +613,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                                     );
                                     switch (combobox_cursel)
                                     {
+                                        case 5:
                                         case 3://L
                                             ComboBox_AddString(var_ctrl->op_combobox,"L");
                                             ComboBox_AddString(var_ctrl->op_combobox,"mL");

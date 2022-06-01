@@ -38,36 +38,25 @@ ssize_t get_lcm(ssize_t num1, ssize_t num2)
     return product/get_gcd(num1,num2);
 }
 
-//returns the solutions
-bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
+//make all elements in the main diagonal non-zero by swaping rows
+bool make_nonzero(ssize_t** matrix, const size_t nrows, const size_t ncols)
 {
-    //make all elements in the main diagonal non-zero
-    for(size_t cur_row = 0, cur_col = 0; cur_row < nrows; cur_row++, cur_col = cur_row)
-    {
-        //matrix[cur_row][cur_col] is the current element of the diagonal to make non-zero
-
-        if(matrix[cur_row][cur_col] != 0)
+    {//See if we really have to make_nonzero()
+        bool all_nonzero = true;
+        for(size_t cur_row = 0, cur_col = 0; cur_row < nrows; cur_row++, cur_col = cur_row)
         {
-            continue;
-        }
-
-        for(size_t i = 0, j = 0; i < nrows; i++, j = i)
-        {
-            if(i != cur_row || j != cur_col)
+            if(matrix[cur_row][cur_col] != 0)
             {
-                if(matrix[i][cur_col] != 0)
-                {
-                    for(size_t j = 0; j < ncols; j++)
-                    {
-                        ssize_t aux = matrix[i][j];
-                        matrix[i][j] = matrix[cur_row][j];
-                        matrix[cur_row][j] = aux;
-                    }
-                    break;
-                }
+                all_nonzero = false;
+                break;
             }
         }
+        if(all_nonzero == true)
+        {
+            return true;
+        }
     }
+
     for(size_t cur_row = 0, cur_col = 0; cur_row < nrows; cur_row++, cur_col = cur_row)
     {
         //matrix[cur_row][cur_col] is the current element of the diagonal to make non-zero
@@ -78,44 +67,13 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
             {
                 if(matrix[i][cur_col] != 0 && matrix[cur_row][j] != 0)
                 {
-                    for(size_t j = 0; j < ncols; j++)
-                    {
-                        ssize_t aux = matrix[i][j];
-                        matrix[i][j] = matrix[cur_row][j];
-                        matrix[cur_row][j] = aux;
-                    }
+                    ssize_t* aux = matrix[i];
+                    matrix[i] = matrix[cur_row];
+                    matrix[cur_row] = aux;
                 }
             }
         }
     }
-
-    //replace one of the variables for two
-    {
-        bool found_one = false;
-        for(size_t i = 0; i < nrows; i++)
-        {
-            for(size_t j = 0, maxj = ncols-1; j < maxj; j++)
-            {
-                if(i != j && matrix[i][j] != 0)
-                {
-                    matrix[i][maxj] = -1*(matrix[i][j]*1);
-                    matrix[i][j] = 0;
-                    found_one = true;
-                    break;
-                }
-            }
-            if(found_one)
-            {
-                break;
-            }
-        }
-        if(found_one == false)
-        {
-            return false;
-        }
-    }
-
-    show_matrix(matrix,nrows,ncols);
 
     //check if all elements of the main diagonal are non-zero
     for(size_t cur_row = 0, cur_col = 0; cur_row < nrows; cur_row++, cur_col = cur_row)
@@ -127,16 +85,29 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
         }
     }
 
+    return true;
+}
+
+//make zero all elements which aren't from the main diagonal
+bool make_zero(ssize_t** matrix, const size_t nrows, const size_t ncols)
+{
+    //if(make_nonzero(matrix,nrows,ncols)==false) return false;
+
+    //make zero all elements which aren't from the main diagonal
     for(size_t cur_col = 0, cur_row = 0, max_col = ncols-2; cur_col < max_col; cur_col++, cur_row++)
     {
         for(size_t i = cur_row+1; i < nrows; i++)
         {
             ssize_t cur_elem_to_make_zero = matrix[i][cur_col];
+            ssize_t cur_elem_of_diagonal = matrix[cur_row][cur_col];
             if(cur_elem_to_make_zero == 0)
             {
                 continue;
             }
-            ssize_t cur_elem_of_diagonal = matrix[cur_row][cur_col];
+            if(cur_elem_of_diagonal == 0)
+            {
+                return false;
+            }
             ssize_t lcm = get_lcm(cur_elem_to_make_zero,cur_elem_of_diagonal);
             ssize_t cur_elem_of_diagonal_multiplier = lcm/cur_elem_of_diagonal;
             ssize_t cur_elem_to_make_zero_multiplier = lcm/cur_elem_to_make_zero;
@@ -145,6 +116,8 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
             {
                 matrix[i][j] = cur_elem_to_make_zero_multiplier*matrix[i][j] -  cur_elem_of_diagonal_multiplier*matrix[cur_row][j];
             }
+
+            if(make_nonzero(matrix,nrows,ncols)==false) return false;
         }
     }
     show_matrix(matrix,nrows,ncols);
@@ -169,9 +142,26 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
             for(size_t j = i; j < ncols; j++)
             {
                 matrix[i][j] = cur_elem_to_make_zero_multiplier*matrix[i][j] -  cur_elem_of_diagonal_multiplier*matrix[cur_row][j];
-            }        
+            }
+
+            if(make_nonzero(matrix,nrows,ncols)==false) return false;        
         }
     }
+    show_matrix(matrix,nrows,ncols);
+
+    return true;
+}
+
+//returns the solutions
+bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
+{
+    show_matrix(matrix,nrows,ncols);
+
+    if(make_nonzero(matrix,nrows,ncols)==false) return false;
+
+    show_matrix(matrix,nrows,ncols);
+
+    if(make_zero(matrix,nrows,ncols) == false) return false;
 
     //check if all elements of the main diagonal and the last column are non-zero (again)
     for(size_t cur_row = 0, cur_col = 0; cur_row < nrows; cur_row++, cur_col = cur_row)
@@ -183,14 +173,22 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
         }
     }
 
+    //get each coefficient
+    //example of how each row is treated:
+    //ax + 0y + 0z = b ----> 1x + 0y + 0z = b/a
+    //Then, if b/a isn't an integer:
+    /*a/b is simplified by using the gdc returned by  get_gcd(a,b)*/
+    //all elements of the last column are multiplied by a
     for(size_t i = 0, j = 0; i < nrows; i++, j=i)
     {
         if(matrix[i][ncols-1]%matrix[i][j] != 0)
         {
+            /* a/b is simplified */
             ssize_t gcd = get_gcd(matrix[i][ncols-1],matrix[i][j]);
             matrix[i][ncols-1] /= gcd;
             matrix[i][j] /= gcd;
 
+            //everyone is multiplied by a
             ssize_t multiplier = matrix[i][j];
             for(size_t i = 0; i < nrows; i++)
             {
@@ -200,6 +198,21 @@ bool solve_matrix(ssize_t** matrix, size_t nrows, size_t ncols)
         matrix[i][ncols-1] /= matrix[i][j];
         matrix[i][j] = 1;
     }
+
+    //simplify all values
+    const size_t last_col = ncols-1;
+    ssize_t gdc = get_gcd(matrix[0][last_col],matrix[1][last_col]);
+    for(size_t i = 2; i < nrows; i++)
+    {
+        ssize_t gdc_aux = get_gcd(matrix[i][last_col],matrix[i-1][last_col]);
+        gdc = get_gcd(gdc,gdc_aux);
+    }
+    for(size_t i = 0; i < nrows; i++)
+    {
+        matrix[i][last_col] /= gdc;
+    }
+
+    show_matrix(matrix,nrows,ncols);
 
     return true;
 }
@@ -338,6 +351,16 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
         {
             if(nrows+1 != nvariables)
             {
+                for(size_t i = 0; i < nrows; i++)
+                {
+                    free(matrix[i]);
+                }
+                free(matrix);
+
+                free(comps_arr);
+
+                free(atomic_nums_arr);
+
                 return REACTION_ERR_BALANCE_CANNOT_BALANCE;
             }
 
@@ -351,21 +374,51 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
             }
             nrows = nvariables;
         }
+
+        //replace one of the variables for one
+        ssize_t* last_row = matrix[nrows-1];
+        size_t lr_index = 0;
+        while(matrix[lr_index] != last_row)
+        {
+            lr_index++;
+        }
+        for(size_t i = 0; i < ncols-1; i++)
+        {
+            if(last_row[i] != 0 && i != lr_index)
+            {
+                //"well, since it is 1, its coefficient shall go to the right part of the equation"
+                last_row[ncols-1] = last_row[i]*-1;
+                last_row[i] = 0;
+            }
+        }
     }
 
-    show_matrix(matrix,nrows,ncols);
+    if(solve_matrix(matrix,nrows,ncols) == false)
+    {
+        for(size_t i = 0; i < nrows; i++)
+        {
+            free(matrix[i]);
+        }
+        free(matrix);
 
-    if(solve_matrix(matrix,nrows,ncols) == false) return REACTION_ERR_BALANCE_CANNOT_BALANCE;
+        free(comps_arr);
 
-    show_matrix(matrix,nrows,ncols);
+        free(atomic_nums_arr);
+        
+        return REACTION_ERR_BALANCE_CANNOT_BALANCE;
+    }
 
     for(size_t i = 0; i < react->reactants.nsubstances; i++)
     {
-        react->reactants.substances[i].amount = matrix[i][ncols-1];
+        ssize_t val = matrix[i][ncols-1];
+        val = val < 0 ? val*-1 : val;
+        react->reactants.substances[i].amount = val;
     }
     for (size_t i = 0; i < react->products.nsubstances; i++)
     {
-        react->products.substances[i].amount = matrix[react->reactants.nsubstances+i][ncols-1];
+        ssize_t val = matrix[react->reactants.nsubstances+i][ncols-1];
+        val = val < 0 ? val*-1 : val;
+        react->products.substances[i].amount = val;
     }   
 
     for(size_t i = 0; i < nrows; i++)
