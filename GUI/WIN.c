@@ -134,7 +134,12 @@ static inline void init_var_arr_ctrls(substance_arr_t subs, size_t x_pos, HWND h
         var_arr->var_arr.substances[i].molar_mass = subs.substances[i].molar_mass;
 
         char buffer[75];
-        print_substance(&subs.substances[i],buffer,75);
+        {
+            size_t amount = subs.substances[i].amount;
+            subs.substances[i].amount = 1;
+            print_substance(&subs.substances[i],buffer,75);
+            subs.substances[i].amount = amount;
+        }
         var_arr->ctrls[i].static_title = CreateWindowEx(
             0,
             WC_STATIC,
@@ -276,7 +281,7 @@ static inline char get_all_vars_from_ctrls(const var_arr_ctrls_t * const restric
                         }
 
                         num /= comps.bucket[1];
-                        num *= var_arr->var_arr.substances[i].molar_mass;
+                        //num *= var_arr->var_arr.substances[i].molar_mass;
                     }
                 case 3://M
                 case 4://m
