@@ -32,6 +32,7 @@ int main(void)
 
             //a ---> x
             //b ---> y
+            //Then, how do I get the value of y?
             //y = x * (b/a)
             //then seed is b/a
             //y = x * seed
@@ -127,8 +128,13 @@ int main(void)
                     }
                 }
 
+                if(counter == 0)
+                {
+                    //kill the while statement
+                    break;
+                }
 
-                if(counter < 2)
+                if(counter == 1)
                 {
                     //we just have data about one reactant so...
                     for(size_t i = 0; i < real_reactants->nsubstances; i++)
@@ -142,109 +148,118 @@ int main(void)
                 }
                 else
                 {
-                    //get limiting and excess
+                    //get limiting
+                    limiting_reagent_index = 0;
                     seed = real_reactants->substances[limiting_reagent_index].mol / theoretical_reactants->substances[limiting_reagent_index].amount;
-                    for(size_t i = 0; i < real_reactants->nsubstances; i++)
+                    for(size_t i = 1; i < real_reactants->nsubstances; i++)
                     {
-                        if(i != limiting_reagent_index)
+                        if(theoretical_reactants->substances[i].amount*seed > real_reactants->substances[i].mol)
                         {
-                            if(theoretical_reactants->substances[i].amount*seed > real_reactants->substances[limiting_reagent_index].mol)
-                            {
-                                limiting_reagent_index = i;
-                                seed = real_reactants->substances[limiting_reagent_index].mol / theoretical_reactants->substances[limiting_reagent_index].amount;
-                            }
+                            limiting_reagent_index = i;
+                            seed = real_reactants->substances[limiting_reagent_index].mol / theoretical_reactants->substances[limiting_reagent_index].amount;
                         }
                     }
                 }
 
                 {
+                    const substance_arr_t * cur_subs_arr;
+                    const substance_arr_t * const react[2] = {&input.react->reactants,&input.react->products};
+                    num_t seed = real_reactants->substances[limiting_reagent_index].mol / input.react->reactants.substances[limiting_reagent_index].amount;
+                    char units[] = {'m','g','k'};
+                    catstr_to_output_buffer("\r\n\r\nReaccion real:\r\n\r\n",sizeof("\r\n\r\nReaccion real:\r\n\r\n")-1);
+                    for(size_t units_index = 0; units_index < 3; units_index++)
                     {
-                        const substance_arr_t * cur_subs_arr;
-                        const substance_arr_t * const react[2] = {&input.react->reactants,&input.react->products};
-                        num_t seed = real_reactants->substances[limiting_reagent_index].mol / input.react->reactants.substances[limiting_reagent_index].amount;
-                        char units[] = {'m','g','k'};
-                        catstr_to_output_buffer("\r\n\r\nReaccion real:\r\n\r\n",sizeof("\r\n\r\nReaccion real:\r\n\r\n")-1);
-                        for(size_t units_index = 0; units_index < 3; units_index++)
+                        for(size_t i = 0; i < 2; i++)
                         {
-                            for(size_t i = 0; i < 2; i++)
+                            cur_subs_arr = react[i];
+                            for(size_t i = 0; i < cur_subs_arr->nsubstances; i++)
                             {
-                                cur_subs_arr = react[i];
-                                for(size_t i = 0; i < cur_subs_arr->nsubstances; i++)
+                                num_t num = cur_subs_arr->substances[i].amount*seed;
+                                const char * str;
+                                size_t str_len;
+                                switch(units[units_index])
                                 {
-                                    num_t num = cur_subs_arr->substances[i].amount*seed;
-                                    const char * str;
-                                    size_t str_len;
-                                    switch(units[units_index])
-                                    {
-                                        case 'm':
-                                            str = " mol de ";
-                                            str_len = sizeof(" mol de ");
-                                            break;
-                                        case 'g':
-                                            num *= cur_subs_arr->substances[i].molar_mass;
-                                            str = " g de ";
-                                            str_len = sizeof(" g de ");
-                                            break;
-                                        case 'k':
-                                            num *= cur_subs_arr->substances[i].molar_mass;
-                                            num /= 1000;
-                                            str = " kg de ";
-                                            str_len = sizeof(" kg de ");
-                                            break;
-                                    }
-                                    catstr_to_output_buffer(buffer,sprintf(buffer,"%lf",num));
-                                    catstr_to_output_buffer(str,str_len-1);
+                                    case 'm':
+                                        str = " mol de ";
+                                        str_len = sizeof(" mol de ");
+                                        break;
+                                    case 'g':
+                                        num *= cur_subs_arr->substances[i].molar_mass;
+                                        str = " g de ";
+                                        str_len = sizeof(" g de ");
+                                        break;
+                                    case 'k':
+                                        num *= cur_subs_arr->substances[i].molar_mass;
+                                        num /= 1000;
+                                        str = " kg de ";
+                                        str_len = sizeof(" kg de ");
+                                        break;
+                                }
+                                catstr_to_output_buffer(buffer,sprintf(buffer,"%lf",num));
+                                catstr_to_output_buffer(str,str_len-1);
 
-                                    {
-                                        size_t amount = react[i]->substances[i].amount;
-                                        react[i]->substances[i].amount = 1;
-                                        catstr_to_output_buffer(buffer,print_substance(&react[i]->substances[i],buffer,1000));
-                                        react[i]->substances[i].amount = amount;
-                                    }
-
-                                    if(i != cur_subs_arr->nsubstances-1)
-                                    {
-                                        catstr_to_output_buffer(" + ",sizeof(" + ")-1);
-                                    }
+                                {
+                                    size_t amount = cur_subs_arr->substances[i].amount;
+                                    cur_subs_arr->substances[i].amount = 1;
+                                    catstr_to_output_buffer(buffer,print_substance(&cur_subs_arr->substances[i],buffer,1000));
+                                    cur_subs_arr->substances[i].amount = amount;
                                 }
 
-                                if(i == 0)
+                                if(i != cur_subs_arr->nsubstances-1)
                                 {
-                                    catstr_to_output_buffer("--->",sizeof("--->")-1);
-                                }
-                                else
-                                {
-                                    catstr_to_output_buffer("\r\n\r\n",4);
+                                    catstr_to_output_buffer(" + ",sizeof(" + ")-1);
                                 }
                             }
-                        }
-                    }              
-                
-                }
 
-                if(counter < 2)
+                            if(i == 0)
+                            {
+                                catstr_to_output_buffer("--->",sizeof("--->")-1);
+                            }
+                            else
+                            {
+                                catstr_to_output_buffer("\r\n\r\n",4);
+                            }
+                        }
+                    }
+                }              
+
+                if(counter == 1)
                 {
                     //kill the while statement
                     break;
                 }
 
                 //print
-                catstr_to_output_buffer("\r\nReactivo limitante: ",sizeof("\r\nReactivo limitante: ")-1);
-                {
-                    size_t amount = theoretical_reactants->substances[limiting_reagent_index].amount;
-                    theoretical_reactants->substances[limiting_reagent_index].amount = 1;
-                    catstr_to_output_buffer(buffer,print_substance(&theoretical_reactants->substances[limiting_reagent_index],buffer,1000));
-                    theoretical_reactants->substances[limiting_reagent_index].amount = amount;
-                }
                 if(real_reactants->nsubstances == 2)
                 {
                     size_t excess_reagent_index = (1+limiting_reagent_index)%2;
+                    if(theoretical_reactants->substances[excess_reagent_index].amount*seed == real_reactants->substances[excess_reagent_index].mol)
+                    {
+                        break;//There are not limiting and excess
+                    }
+                    catstr_to_output_buffer("\r\nReactivo limitante: ",sizeof("\r\nReactivo limitante: ")-1);
+                    {
+                        size_t amount = theoretical_reactants->substances[limiting_reagent_index].amount;
+                        theoretical_reactants->substances[limiting_reagent_index].amount = 1;
+                        catstr_to_output_buffer(buffer,print_substance(&theoretical_reactants->substances[limiting_reagent_index],buffer,1000));
+                        theoretical_reactants->substances[limiting_reagent_index].amount = amount;
+                    }
                     catstr_to_output_buffer("\r\nReactivo en exceso: ",sizeof("\r\nReactivo en exceso: ")-1);
                     {
                         size_t amount = theoretical_reactants->substances[excess_reagent_index].amount;
                         theoretical_reactants->substances[excess_reagent_index].amount = 1;
                         catstr_to_output_buffer(buffer,print_substance(&theoretical_reactants->substances[excess_reagent_index],buffer,1000));                
                         theoretical_reactants->substances[excess_reagent_index].amount = amount;
+                    }
+                }
+                else
+                {
+                    catstr_to_output_buffer("\r\nReactivo limitante: ",sizeof("\r\nReactivo limitante: ")-1);
+                    {
+                        size_t amount = theoretical_reactants->substances[limiting_reagent_index].amount;
+                        theoretical_reactants->substances[limiting_reagent_index].amount = 1;
+                        catstr_to_output_buffer(buffer,print_substance(&theoretical_reactants->substances[limiting_reagent_index],buffer,1000));
+                        theoretical_reactants->substances[limiting_reagent_index].amount = amount;
                     }
                 }
 
