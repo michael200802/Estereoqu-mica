@@ -235,11 +235,17 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
     comps_arr = malloc(sizeof(components_of_substance_t)*(nreactants+nproducts));
     for(size_t i = 0; i < nreactants; i++)
     {
+        size_t amount = react->reactants.substances[i].amount;
+        react->reactants.substances[i].amount = 1;
         get_components_of_substance(&react->reactants.substances[i],&comps_arr[i]);
+        react->reactants.substances[i].amount = amount;
     }
     for(size_t i = 0; i < nproducts; i++)
     {
+        size_t amount = react->products.substances[i].amount;
+        react->products.substances[i].amount = 1;
         get_components_of_substance(&react->products.substances[i],&comps_arr[nreactants+i]);
+        react->products.substances[i].amount = amount;
     }
 
     //fill comps_arr_sum_reactants
@@ -378,6 +384,20 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
         //replace one of the variables for one
         ssize_t* last_row = matrix[nrows-1];
         size_t lr_index = 0;
+        if(make_nonzero(matrix,nrows,ncols) == false)
+        {
+            for(size_t i = 0; i < nrows; i++)
+            {
+                free(matrix[i]);
+            }
+            free(matrix);
+
+            free(comps_arr);
+
+            free(atomic_nums_arr);
+            
+            return REACTION_ERR_BALANCE_CANNOT_BALANCE;
+        }
         while(matrix[lr_index] != last_row)
         {
             lr_index++;
