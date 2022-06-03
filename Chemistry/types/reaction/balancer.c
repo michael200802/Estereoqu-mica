@@ -230,6 +230,7 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
     components_of_substance_t comps_arr_sum = {};//total elements of comps_arr
     atomic_num_t* atomic_nums_arr;
     ssize_t ** matrix;//system of equations
+    size_t max_nrows;//nvariables
 
     //fill comps_arr
     comps_arr = malloc(sizeof(components_of_substance_t)*(nreactants+nproducts));
@@ -284,8 +285,9 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
     }
 
     //create matrix
-    matrix = malloc(sizeof(ssize_t*)*(nvariables > nrows ? nvariables : nrows));
-    for(size_t i = 0, maxi = (nvariables > nrows ? nvariables : nrows); i < maxi; i++)
+    max_nrows = nvariables > nrows ? nvariables : nrows;
+    matrix = malloc(sizeof(ssize_t*)*max_nrows);
+    for(size_t i = 0, maxi = max_nrows; i < maxi; i++)
     {
         //create the row
         matrix[i] = calloc(ncols,sizeof(ssize_t));
@@ -336,28 +338,77 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
     }
     putchar('\n');
 
-    //fix the matrix for gauss-jordan
+    show_matrix(matrix,nrows,ncols);
+
+    //fix the matrix for gauss-jordan (if it is not possible, it fails)
     {
         //fix its size
         if(nrows > nvariables)
         {
-            //the last row is the total sum of the rows whose indexes are [nvariables;nrows)
-            size_t last_row = nvariables-1;
-            for(size_t i = nvariables; i < nrows; i++)
+            //Simplify the equations
+            for(size_t i = 0; i < nrows; i++)
             {
+                ssize_t gdc = 0;
+                size_t j = 0;
+                for(; j < ncols && gdc == 0; j++)
+                {
+                    if(matrix[i][j] != 0)
+                    {
+                        gdc = matrix[i][j];
+                    }
+                }
+                for(; j < ncols; j++)
+                {
+                    if(matrix[i][j] == 0)
+                    {
+                        continue;
+                    }
+                    gdc = get_gcd(gdc,matrix[i][j]);
+                }
                 for(size_t j = 0; j < ncols; j++)
                 {
-                    matrix[last_row][j] += matrix[i][j];
+                    matrix[i][j] /= gdc;
                 }
-                free(matrix[i]);//this row will be no longer used for anything
             }
-            nrows = nvariables;
-        }
-        else if(nrows < nvariables)
-        {
-            if(nrows+1 != nvariables)
+            
+            show_matrix(matrix,nrows,ncols);
+
+            //Look if we have repeated equations
+            for(size_t i = 0; i < nrows; i++)
             {
-                for(size_t i = 0; i < nrows; i++)
+                for(size_t j = 0; j < nrows;)
+                {
+                    if(i == j)
+                    {
+                        j++;
+                        continue;
+                    }
+
+                    ssize_t* row1 = matrix[i], *row2 = matrix[j];
+                    bool equal = true;
+                    for(size_t i = 0; i < ncols && equal; i++)
+                    {
+                        equal = (row1[i] == row2[i]);
+                    }
+
+                    if(equal)
+                    {
+                        nrows--;
+                        matrix[i] = matrix[nrows];
+                        matrix[nrows] = row1;
+                        j = 0;
+                    }
+                    else
+                    {
+                        j++;
+                    }
+                }
+            }
+
+            //Fail, it's impossible
+            if(nrows > nvariables)
+            {
+                for(size_t i = 0; i < max_nrows; i++)
                 {
                     free(matrix[i]);
                 }
@@ -369,7 +420,9 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
 
                 return REACTION_ERR_BALANCE_CANNOT_BALANCE;
             }
-
+        }
+        else if(nrows+1 == nvariables)
+        {
             size_t last_row = nrows;
             for(size_t i = 0; i < nrows; i++)
             {
@@ -378,15 +431,31 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
                     matrix[last_row][j] += matrix[i][j];
                 }
             }
-            nrows = nvariables;
+            nrows++;
         }
+        else
+        {
+            for(size_t i = 0; i < max_nrows; i++)
+            {
+                free(matrix[i]);
+            }
+            free(matrix);
+
+            free(comps_arr);
+
+            free(atomic_nums_arr);
+
+            return REACTION_ERR_BALANCE_CANNOT_BALANCE;
+        }
+    
+        show_matrix(matrix,nrows,ncols);
 
         //replace one of the variables for one
         ssize_t* last_row = matrix[nrows-1];
         size_t lr_index = 0;
         if(make_nonzero(matrix,nrows,ncols) == false)
         {
-            for(size_t i = 0; i < nrows; i++)
+            for(size_t i = 0; i < max_nrows; i++)
             {
                 free(matrix[i]);
             }
@@ -413,9 +482,11 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
         }
     }
 
+    show_matrix(matrix,nrows,ncols);
+
     if(solve_matrix(matrix,nrows,ncols) == false)
     {
-        for(size_t i = 0; i < nrows; i++)
+        for(size_t i = 0; i < max_nrows; i++)
         {
             free(matrix[i]);
         }
@@ -441,7 +512,7 @@ reaction_err_t balance_reaction(reaction_t * restrict const react)
         react->products.substances[i].amount = val;
     }   
 
-    for(size_t i = 0; i < nrows; i++)
+    for(size_t i = 0; i < max_nrows; i++)
     {
         free(matrix[i]);
     }
