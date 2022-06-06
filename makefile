@@ -12,6 +12,17 @@ clean:
 	rm -r Chemistry/types/reaction/*.o
 	rm GUI/*.o
 
+#Math-----------------------------------------------------------------------------------------------------------
+Math/%.o: Math/%.c Math/%.h
+	$(compiler) -c $(@:.o=.c) -o $@
+
+Math_objf:=Math/commons/commons.o Math/matrix/matrix.o Math/row/row.o
+
+#Math-----------------------------------------------------------------------------------------------------------
+
+
+#Chemistry------------------------------------------------------------------------------------------------------
+
 #constants--------------------------------------------------
 
 Chemistry/constants/%.o: Chemistry/constants/%.c Chemistry/constants/%.h Chemistry/constants/%.py
@@ -44,6 +55,9 @@ test_reaction: test_reaction.c $(types_objf) $(constants_objf)
 	$(compiler) $? -o $@
 
 #types------------------------------------------------------
+
+#Chemistry------------------------------------------------------------------------------------------------------
+
 
 #GUI--------------------------------------------------------
 GUI/%.o: GUI/%.c GUI/GUI.h
