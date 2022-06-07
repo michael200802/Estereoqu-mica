@@ -1,5 +1,5 @@
 compiler=x86_64-w64-mingw32-gcc
-compiler=gcc
+#compiler=gcc
 
 clean:
 	rm *.o
@@ -10,6 +10,7 @@ clean:
 	rm -r Chemistry/types/elem/*.o
 	rm -r Chemistry/types/substance/*.o
 	rm -r Chemistry/types/reaction/*.o
+	rm -r Math/commons/commons.o Math/matrix/matrix.o Math/row/row.o
 	rm GUI/*.o
 
 #Math-----------------------------------------------------------------------------------------------------------
@@ -29,7 +30,7 @@ Chemistry/constants/%.o: Chemistry/constants/%.c Chemistry/constants/%.h Chemist
 #	python $(@:.o=.py)
 	$(compiler) -c $(@:.o=.c) -o $@
 
-constants_objf:=Chemistry/constants/get_elem_symbol/get_elem_symbol.o Chemistry/constants/get_atomicnum/get_atomicnum.o Chemistry/constants/get_oxistates/get_oxistates.o Chemistry/constants/get_uma/get_uma.o
+constants_objf:=$(Math_objf) Chemistry/constants/get_elem_symbol/get_elem_symbol.o Chemistry/constants/get_atomicnum/get_atomicnum.o Chemistry/constants/get_oxistates/get_oxistates.o Chemistry/constants/get_uma/get_uma.o
 
 #constants--------------------------------------------------
 
