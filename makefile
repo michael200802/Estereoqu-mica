@@ -43,16 +43,7 @@ Chemistry/types/substance/substance.o: Chemistry/types/substance/substance.c Che
 Chemistry/types/reaction/%.o: Chemistry/types/reaction/%.c Chemistry/types/reaction/reaction.h Chemistry/types/substance/substance.o
 	$(compiler) -c $(@:.o=.c) -o $@
 
-types_objf:=Chemistry/types/reaction/reaction.o Chemistry/types/reaction/balancer.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o
-
-test_elem: test_elem.c Chemistry/types/elem/elem.o $(constants_objf)
-	$(compiler) $? -o $@
-
-test_substance: test_substance.c Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
-	$(compiler) $? -o $@
-
-test_reaction: test_reaction.c $(types_objf) $(constants_objf)
-	$(compiler) $? -o $@
+Chemistry_types_objf:=Chemistry/types/reaction/reaction.o Chemistry/types/reaction/balancer.o Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o
 
 #types------------------------------------------------------
 
@@ -64,8 +55,28 @@ GUI/%.o: GUI/%.c GUI/GUI.h
 	$(compiler) -c $(@:.o=.c) -o $@
 #GUI--------------------------------------------------------
 
+
+#Tests---------------------------------------------------------------------------------------------------------
+
+test_elem: test_elem.c Chemistry/types/elem/elem.o $(constants_objf)
+	$(compiler) $? -o $@
+
+test_substance: test_substance.c Chemistry/types/substance/substance.o Chemistry/types/elem/elem.o $(constants_objf)
+	$(compiler) $? -o $@
+
+test_reaction: test_reaction.c $(Chemistry_types_objf) $(constants_objf)
+	$(compiler) $? -o $@
+
+test_matrix: test_matrix.c $(Math_objf)
+	$(compiler) $? -o $@
+
+#Tests---------------------------------------------------------------------------------------------------------
+
+
+#Final product:
+
 main.o: main.c
 	$(compiler) -c $? -o $@
 
-wmain.exe: main.o $(types_objf) $(constants_objf) GUI/WIN.o GUI/input.o GUI/output.o
+wmain.exe: main.o $(Chemistry_types_objf) $(constants_objf) GUI/WIN.o GUI/input.o GUI/output.o
 	$(compiler) -mwindows -pthread --static $? -o $@

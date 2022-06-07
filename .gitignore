@@ -1,0 +1,8 @@
+.vscode/
+*.o
+test_elem
+test_reaction
+test_substance
+test_matrix
+wmain.exe
+GUI/CLI.c

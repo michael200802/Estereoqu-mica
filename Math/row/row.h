@@ -10,6 +10,8 @@ bool create_row(row_t* restrict const row, size_t ncols);
 
 void subtract_row(row_t*restrict const row1, const row_t* restrict const row2);
 
+void add_row(row_t*restrict const row1, const row_t* restrict const row2);
+
 void multiply_row(row_t*restrict const row, integer_t num);
 
 void divide_row(row_t* restrict const row, integer_t dividend);

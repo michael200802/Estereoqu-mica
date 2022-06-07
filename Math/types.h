@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-typedef ssize_t integer_t;
+typedef long long integer_t;
 
 typedef struct
 {

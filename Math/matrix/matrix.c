@@ -26,10 +26,11 @@ inline bool create_matrix(matrix_t* const restrict matrix, size_t nrows, size_t 
 void show_matrix(const matrix_t* const matrix)
 {
     char buffer[100];
+    size_t coords_max_len = sprintf(buffer,"[%zu][%zu]",matrix->nrows-1,matrix->ncols-1);
     size_t max_len = 0;
     for(size_t i = 0; i < matrix->nrows; i++)
     {
-        for(size_t j = 0; j < matrix->ncols; i++)
+        for(size_t j = 0; j < matrix->ncols; j++)
         {
             size_t newlen = sprintf(buffer,"%lli",matrix_get_elem((*matrix),i,j));
             if(max_len < newlen)
@@ -38,23 +39,23 @@ void show_matrix(const matrix_t* const matrix)
             }
         }
     }
+
+    fputc('\n',stdout);
     for(size_t i = 0; i < matrix->nrows; i++)
     {
         for(size_t j = 0; j < matrix->ncols; j++)
         {
-            size_t strlen = sprintf(buffer,"%lli",matrix_get_elem((*matrix),i,j));
-            size_t nspaces = max_len-strlen;
-            for(size_t i = 0, maxi = nspaces/2+nspaces%2; i < maxi; i++)
+            size_t strlen = sprintf(buffer,"%lli[%zu][%zu]",matrix_get_elem((*matrix),i,j),i,j);
+            size_t nspaces = 2+(coords_max_len+max_len-strlen);
+            for(size_t i = 0, maxi = nspaces; i < maxi; i++)
             {
                 putchar(' ');
             }
             fputs(buffer,stdout);
-            for(size_t i = 0, maxi = nspaces/2; i < maxi; i++)
-            {
-                putchar(' ');
-            }
         }
+        fputc('\n',stdout);
     }
+    fputc('\n',stdout);
 }
 
 inline void swap_rows(matrix_t* const restrict matrix, size_t row1, size_t row2)
@@ -94,7 +95,7 @@ inline void make_matrix_REF(matrix_t* const restrict matrix)
         }
 
         //Eliminate elements below the pivot using the pivot itself
-        for(size_t i = cur_row+1, maxi = matrix->nrows-1; i < maxi; i++)
+        for(size_t i = cur_row+1, maxi = matrix->nrows; i < maxi; i++)
         {
             eliminate_column(&matrix_get_row((*matrix),i),cur_col,&matrix_get_row((*matrix),cur_row));
         }
@@ -135,8 +136,9 @@ inline void make_matrix_RREF(matrix_t* const restrict matrix)
 {
     make_matrix_REF(matrix);
 
+    //Eliminate above
     for(
-        size_t cur_col = 1, max_cur_col = matrix->ncols, cur_row = 0, max_cur_row = matrix->nrows;
+        size_t cur_col = 0, max_cur_col = matrix->ncols, cur_row = 0, max_cur_row = matrix->nrows;
         cur_col < max_cur_col; 
         cur_col++
         )
@@ -146,8 +148,6 @@ inline void make_matrix_RREF(matrix_t* const restrict matrix)
         {
             continue;//go try with the next element (next column)
         }
-
-        simplify_row(&matrix_get_row((*matrix),cur_row));//We need the pivot to be the closest to one
 
         //Eliminate elements above the current pivot
         for(size_t i = 0; i < cur_row; i++)
@@ -160,6 +160,31 @@ inline void make_matrix_RREF(matrix_t* const restrict matrix)
         if(cur_row == max_cur_row)
         {
             break;//well, there isn't a "next row" UnU
+        }
+    }
+
+    //We need all pivots to be the closest to one
+    for(
+        size_t cur_row = 0, cur_col = 0, max_cur_col = matrix->ncols, max_cur_row = matrix->nrows;
+        cur_col < max_cur_col;
+        cur_col++
+    )
+    {
+        integer_t pivot_val = matrix_get_elem((*matrix),cur_row,cur_col);
+        if(pivot_val != 0)
+        {
+            if(pivot_val < 0)
+            {
+                multiply_row(&matrix_get_row((*matrix),cur_row),-1);
+            }
+            simplify_row(&matrix_get_row((*matrix),cur_row));
+            
+            //Go to the next row
+            cur_row++;
+            if(cur_row == max_cur_row)
+            {
+                break;
+            }
         }
     }
 }

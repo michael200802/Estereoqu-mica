@@ -13,7 +13,6 @@ inline void subtract_row(row_t*restrict const row1, const row_t* restrict const 
     {
         row1->arr[i] -= row2->arr[i];
     }
-    simplify_row(row1);
 }
 
 inline void multiply_row(row_t*restrict const row, integer_t num)
@@ -24,7 +23,7 @@ inline void multiply_row(row_t*restrict const row, integer_t num)
     }
 }
 
-void divide_row(row_t* restrict const row, integer_t dividend)
+inline void divide_row(row_t* restrict const row, integer_t dividend)
 {
     if(dividend == 0)
     {
@@ -38,8 +37,15 @@ void divide_row(row_t* restrict const row, integer_t dividend)
 
 inline void simplify_row(row_t*restrict const row)
 {
-    integer_t gcd = row->arr[0];
-    for(size_t i = 1; i < row->len; i++)
+    size_t i = 0;
+    for(; row->arr[i] == 0 && i < row->len; i++);
+    if(i == row->len)
+    {
+        return;
+    }
+
+    integer_t gcd = row->arr[i];
+    for(i += 1; i < row->len; i++)
     {
         if(row->arr[i] == 0)
         {
@@ -65,20 +71,22 @@ inline bool is_row_all_zero(row_t* restrict const row)
 
 inline void eliminate_column(row_t* restrict const minuend_row, size_t col, row_t* restrict const subtrahend_row)
 {
-    if(minuend_row->arr[col] == 0 || subtrahend_row->arr[col] == 0)
+    integer_t minuend = minuend_row->arr[col];
+    integer_t subtrahend = subtrahend_row->arr[col];
+    if(minuend == 0 || subtrahend == 0)
     {
         return;
     }
 
-    integer_t lcm = get_lcm(minuend_row->arr[col],subtrahend_row->arr[col]);
+    integer_t lcm = get_lcm(minuend,subtrahend);
 
-    multiply_row(minuend_row,lcm/minuend_row->arr[col]);
-    multiply_row(subtrahend_row,lcm/subtrahend_row->arr[col]);
+    multiply_row(minuend_row,lcm/minuend);
+    multiply_row(subtrahend_row,lcm/subtrahend);
 
     subtract_row(minuend_row,subtrahend_row);
 
     simplify_row(minuend_row);
-    divide_row(subtrahend_row,lcm/subtrahend_row->arr[col]);
+    divide_row(subtrahend_row,lcm/subtrahend);
 }
 
 inline void delete_row(row_t* restrict const row)
