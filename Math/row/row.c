@@ -2,7 +2,7 @@
 
 inline bool create_row(row_t* restrict const row, size_t ncols)
 {
-    *row = (row_t){.arr = malloc(sizeof(integer_t)*ncols), .len = ncols};
+    *row = (row_t){.arr = calloc(ncols,sizeof(integer_t)), .len = ncols};
 
     return (row->arr == NULL ? false : true);
 }

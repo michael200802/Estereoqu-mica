@@ -117,13 +117,15 @@ inline void make_matrix_REF(matrix_t* const restrict matrix)
 
         if(is_all_zero)
         {
+            //Delete this all-zero row
             delete_row(cur_row);
-            for(size_t j = i, maxj = maxi-1; j < maxj; j++)
+            //Behind this row there are also other all-zero rows
+            for(size_t j = i+1, maxj = maxi; j < maxj; j++)
             {
-                matrix_get_row((*matrix),j) = matrix_get_row((*matrix),j+1);
+                delete_row(&matrix_get_row((*matrix),j));
             }
-            matrix->nrows--;
-            maxi--;
+            matrix->nrows = i;
+            break;
         }
     }
     if(original_nrows != matrix->nrows)
