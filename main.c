@@ -45,7 +45,8 @@ int main(void)
 
             const substance_arr_t * const theoretical_reactants = &react->reactants;
             const var_arr_t * const real_reactants = input.var_arr_reactants;
-            size_t limiting_reagent_index = 0;
+            size_t limiting_reagent_index;
+            size_t excess_reagent_index;
 
             //print theoretical and real reaction
             {
@@ -100,7 +101,7 @@ int main(void)
 
                         if(i == 0)
                         {
-                            catstr_to_output_buffer("--->",sizeof("--->")-1);
+                            catstr_to_output_buffer(" ---> ",sizeof(" ---> ")-1);
                         }
                         else
                         {
@@ -111,7 +112,7 @@ int main(void)
 
             }
 
-            //print which is the excess reagent and the limiting reagent
+            //print the real reaction and print which is the excess reagent and the limiting reagent
             while(1)
             {
                 //see if at least two variables of the reactants are ready
@@ -121,10 +122,6 @@ int main(void)
                     if(real_reactants->substances[i].mol != 0)
                     {
                         counter++;
-                        if(counter == 2)
-                        {
-                            break;
-                        }
                     }
                 }
 
@@ -137,6 +134,8 @@ int main(void)
                 if(counter == 1)
                 {
                     //we just have data about one reactant so...
+
+                    //get limiting
                     for(size_t i = 0; i < real_reactants->nsubstances; i++)
                     {
                         if(real_reactants->substances[i].mol != 0)
@@ -149,14 +148,55 @@ int main(void)
                 else
                 {
                     //get limiting
-                    limiting_reagent_index = 0;
-                    seed = real_reactants->substances[limiting_reagent_index].mol / theoretical_reactants->substances[limiting_reagent_index].amount;
-                    for(size_t i = 1; i < real_reactants->nsubstances; i++)
+                    for(size_t i = 0; i < real_reactants->nsubstances; i++)
                     {
+                        if(real_reactants->substances[i].mol != 0)
+                        {
+                            limiting_reagent_index = i;
+                            break;
+                        }
+                    }
+                    seed = real_reactants->substances[limiting_reagent_index].mol / theoretical_reactants->substances[limiting_reagent_index].amount;
+                    for(size_t i = limiting_reagent_index+1; i < real_reactants->nsubstances; i++)
+                    {
+                        if(real_reactants->substances[i].mol == 0) continue;
                         if(theoretical_reactants->substances[i].amount*seed > real_reactants->substances[i].mol)
                         {
                             limiting_reagent_index = i;
                             seed = real_reactants->substances[limiting_reagent_index].mol / theoretical_reactants->substances[limiting_reagent_index].amount;
+                        }
+                    }
+                    //get excess
+                    if(counter == 2)
+                    {
+                        for(size_t i = 0; i < real_reactants->nsubstances; i++)
+                        {
+                            if(limiting_reagent_index != i && real_reactants->substances[i].mol != 0)
+                            {
+                                excess_reagent_index = i;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //There are more than just two
+                        //The given reactants may be incompatible
+                        bool incompatible_reactants = false;
+                        for(size_t i = 0; i < real_reactants->nsubstances; i++)
+                        {
+                            if(real_reactants->substances[i].mol == 0 || i == limiting_reagent_index) continue;
+                            if(theoretical_reactants->substances[i].amount*seed > real_reactants->substances[i].mol)
+                            {
+                                //What we require is greater than what we have
+                                //Which means, it is incompatible
+                                incompatible_reactants = true;
+                                break;
+                            }
+                        }
+                        if(incompatible_reactants)
+                        {
+                            break;//They are incompatibe, there isn't a real reaction
                         }
                     }
                 }
@@ -213,7 +253,7 @@ int main(void)
 
                             if(i == 0)
                             {
-                                catstr_to_output_buffer("--->",sizeof("--->")-1);
+                                catstr_to_output_buffer(" ---> ",sizeof(" ---> ")-1);
                             }
                             else
                             {
@@ -229,10 +269,9 @@ int main(void)
                     break;
                 }
 
-                //print
-                if(real_reactants->nsubstances == 2)
+                //print real reaction
+                if(counter == 2)
                 {
-                    size_t excess_reagent_index = (1+limiting_reagent_index)%2;
                     if(theoretical_reactants->substances[excess_reagent_index].amount*seed == real_reactants->substances[excess_reagent_index].mol)
                     {
                         break;//There are not limiting and excess
@@ -301,14 +340,11 @@ int main(void)
                                 catstr_to_output_buffer(buffer,sprintf(buffer,"%lf kg de ",(var_arrs[j]->substances[i].mol*var_arrs[j]->substances[i].molar_mass)/1000));
                                 break;
                         }
-
                         {
-                            size_t amount = subs->amount;
-                            subs->amount = 1;
                             catstr_to_output_buffer(buffer,print_substance(subs,buffer,1000));
-                            subs->amount = amount;
                         }
                         catstr_to_output_buffer("\r\n\r\n",4);
+                        subs->amount = amount;
 
                         //mol
                         for (size_t i = 0; i < react->reactants.nsubstances; i++)
@@ -327,7 +363,7 @@ int main(void)
                                 catstr_to_output_buffer(" + ",3);
                             }
                         }
-                        catstr_to_output_buffer("--->",sizeof("--->")-1);
+                        catstr_to_output_buffer(" ---> ",sizeof(" ---> ")-1);
                         for (size_t i = 0; i < react->products.nsubstances; i++)
                         {
                             catstr_to_output_buffer(buffer,sprintf(buffer,"%lf mol ",react->products.substances[i].amount*seed));
@@ -363,7 +399,7 @@ int main(void)
                                 catstr_to_output_buffer(" + ",3);
                             }
                         }
-                        catstr_to_output_buffer("--->",sizeof("--->")-1);
+                        catstr_to_output_buffer(" ---> ",sizeof(" ---> ")-1);
                         for (size_t i = 0; i < react->products.nsubstances; i++)
                         {
                             catstr_to_output_buffer(buffer,sprintf(buffer,"%lf g ",(react->products.substances[i].amount*seed)*react->products.substances[i].molar_mass));
@@ -399,7 +435,7 @@ int main(void)
                                 catstr_to_output_buffer(" + ",3);
                             }
                         }
-                        catstr_to_output_buffer("--->",sizeof("--->")-1);
+                        catstr_to_output_buffer(" ---> ",sizeof(" ---> ")-1);
                         for (size_t i = 0; i < react->products.nsubstances; i++)
                         {
                             catstr_to_output_buffer(buffer,sprintf(buffer,"%lf kg ",(react->products.substances[i].amount*seed)*react->products.substances[i].molar_mass/1000));
@@ -424,6 +460,14 @@ int main(void)
             }
 
         }
+
+        for(size_t i = 0; i < input.react->reactants.nsubstances; i++)
+        {
+            char buffer[100];
+            print_substance(&input.react->reactants.substances[i],buffer,100);
+            printf(" %s ",buffer);
+        }
+        putchar('\n');
 
         flush_output_buffer();        
     }
