@@ -19,7 +19,7 @@ Why doing your stereochemistry homework alone when you can do it with Mochi?
 		
 # Version en español
 
-**<a name="how_does_it_work_spn">Como funciona</a>**
+**<a name="how_does_it_work_spn">Como funciona?</a>**
 	
 Hay 4 estructuras vitales para la logica del programa: 
 	
@@ -32,9 +32,9 @@ Con las instancias de estas estructuras, podemos guardar informacion de:
 	reaction_t: de una reaccion quimica expresada como ecuacion quimica.
 	matrix_t: una matriz.
 
-Se procedera a explicar como se guarda informacion y obtiene informacion con las instancias de estas estructuras.
+Se procedera a explicar como se guarda informacion y obtiene informacion con las instancias de estas estructuras. Ademas, al final se explicara como estas estructuras son usadas por el programa, es decir, su importancia y interrelacion.
 
-## elem_t
+### elem_t
 
 Se puede inicializar una instancia de la estructura elem_t usando la funcion:
 ```C
@@ -53,9 +53,42 @@ Es simple, ambas llaman a la siguiente funcion:
 ```C
 atomic_num_t get_atomicnum(const elem_symbol_t elem_symbol);
 ```
-get_atomicnum() solo requiere un argumento, una instancia de elem_symbol_t que alberge un simbolo, y devuelve a cambio el numero atomico correspondiente al elemento quimico o devuelve -1 si el simbolo pasado no corresponde a algun elemento quimico existente. Esto lo consigue gracias a que esta funcion es una funcion del tipo hash. Lo que la hace merecedora de llamarse asi es la peculiaridad de que la funcion convierte la cadena de caracteres pasada (el simbolo) en un numero, un indice valido (o posicion) en una tabla hash llamada sym_table (la cual solo es un arreglo de atomic_num_t, es decir, numeros atomicos). Con este indice/posicion, la funcion obtiene el numero atomico guardado en la posicion obtenida previamente. Esto se ha diseñado para optimizar la funcion init_elem().
+get_atomicnum() solo requiere un argumento, una instancia de elem_symbol_t que alberge un simbolo, y devuelve a cambio el numero atomico correspondiente al elemento quimico o devuelve -1 si el simbolo pasado no corresponde a algun elemento quimico existente. Esto lo consigue gracias a que esta funcion es una funcion del tipo hash. Lo que la hace merecedora de llamarse asi es la peculiaridad de que la funcion convierte la cadena de caracteres pasada (el simbolo) en un numero, un indice valido (o posicion) en una tabla hash llamada sym_table (la cual solo es un arreglo de atomic_num_t, es decir, numeros atomicos). Con este indice/posicion, la funcion obtiene el numero atomico guardado en la posicion obtenida previamente. Esto se ha diseñado para optimizar a la funcion init_elem() y a su adjunta init_elem_symbol().
 
+Entonces, ¿Como se obtiene informacion del elemento en cuestion una vez que la instancia de elem_t ha sido inicializada?
 
+El numero atomico del elemento ya esta guardado en la estructura elem_t y se puede obtener mediante el uso de la siguiente macro:
+```C
+//Toma como argumento una instancia de elem_t
+#define elem_get_atomicnum(elem) elem.atomic_num
+```
+Con este numero atomico tambien podemos obtener otros atributos del elemento usando a las siguientes funciones:
+```C
+oxistates_t get_oxistates(atomic_num_t atomic_num);//devuelve un arreglo con los posibles estados de oxidacion de un elemento
+elem_symbol_t get_elem_symbol(atomic_num_t num);//devuelve el simbolo del elemento
+num_t get_uma(atomic_num_t atomic_num);//devuelve el peso atomico en uma del elemento
+```
+Las tres solo requieren un argumento, el numero atomico del elemento en cuestion. Luego, le restan 1 a ese numero atomico y asi obtienen un indice (o posicion) valido para un arreglo en cuestion. Entonces, usando el indice mencionado previamente, obtienen un elemento del arreglo y devuelven este elemento, el cual es el atributo (estados de oxidacion, simbolo o peso atomico) del elemento en cuestion. Cada funcion accede a un diferente arreglo/array: get_oxistates() accede a oxistates_table, get_elem_symbol() accede a table y get_uma accede a uma_table. 
+
+Para llamar a estas funciones facilmente se han definido a las siguientes macros:
+```C
+//Al igual que elem_get_atomicnum(), estas tambien toman como argumento una instancia de elem_t
+/*
+  Las tres macros luego llaman a elem_get_atomicnum() para obtener el numero atomico
+  y asi luego pasar este numero a la funcion en cuestion
+*/
+
+#define elem_get_oxistates(elem) get_oxistates(elem_get_atomicnum(elem))
+
+#define elem_get_symbol(elem) get_elem_symbol(elem_get_atomicnum(elem))
+
+#define elem_get_uma(elem) get_uma(elem_get_atomicnum(elem))
+```
+Realmente, el proposito de estas macros es hacer facil de leer y escribir codigo.
+
+### substance
+
+Coming soon, solo esperen me voy a mimir...
 
 **<a name="how_to_compile_spn">Como compilar?</a>**
 	
