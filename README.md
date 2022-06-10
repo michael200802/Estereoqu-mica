@@ -22,8 +22,14 @@ Why doing your stereochemistry homework alone when you can do it with Mochi?
 **<a name="how_does_it_work_spn">Como funciona?</a>**
 	
 Hay 4 estructuras vitales para la logica del programa: 
-	
-	elem_t, substance_t, reaction_t y matrix_t.
+
+[elem_t](#elem_t_spn)
+
+[substance_t](#substance_t_spn)
+
+[reaction_t](#reaction_t_spn)
+
+[matrix_t](#matrix_t_spn)
 
 Con las instancias de estas estructuras, podemos guardar informacion de:
 
@@ -34,7 +40,7 @@ Con las instancias de estas estructuras, podemos guardar informacion de:
 
 Se procedera a explicar como se guarda informacion y obtiene informacion con las instancias de estas estructuras. Ademas, al final se explicara como estas estructuras son usadas por el programa, es decir, su importancia y interrelacion.
 
-### elem_t
+### <a name="elem_t_spn">elem_t</a>
 
 Se puede inicializar una instancia de la estructura elem_t usando la funcion:
 ```C
@@ -86,9 +92,58 @@ Para llamar a estas funciones facilmente se han definido a las siguientes macros
 ```
 Realmente, el proposito de estas macros es hacer facil de leer y escribir codigo.
 
-### substance
+### <a name="substance_t_spn">substance_t</a>
 
-Coming soon, solo esperen me voy a mimir...
+
+
+### <a name="reaction_t_spn">reaction_t</a>
+
+### <a name="matrix_t_spn">matrix_t</a>
+
+Esta estructura sirve para poder crear y guardar matrices. Entonces, para crear una matriz se debe usar la siguiente funcion:
+
+```C
+bool create_matrix(matrix_t* const restrict matrix, size_t nrows, size_t ncols);
+```
+Esta toma como argumento tres cosas: un puntero a la instancia de matrix_t, el numero de filas y el numero de columnas.
+Luego, con estos tres argumentos, crea una matriz y luego guarda esta matriz en la instancia de matrix_t.
+Una vez que la matriz ya no sea necesaria, se usa la siguiente funcion para liberar la memoria consumida por la matriz:
+```C
+void delete_matrix(matrix_t* const restrict matrix);
+```
+
+Esta estructura esta definida de esta manera:
+```C
+typedef long long integer_t;
+
+typedef struct
+{
+    integer_t* arr;
+    size_t len;
+}row_t;
+
+typedef struct
+{
+    row_t* rows;//puntero a un arreglo/array de instancias de la estructura row_t, es decir, a un arreglo de filas.
+    size_t nrows;
+    size_t ncols;
+}matrix_t;
+```
+Como se puede ver, cada instancia incializada de matrix_t alberga el numero de filas, el numero de columnas y un arreglo de filas, que seria en si la matriz. Por lo tanto, para acceder al numero de filas o al numero de columnas simplemente se accede a estos de directamente, a excepción de los elementos de la matriz y las filas. Para acceder a un elemento o a una fila de una matriz (con el objetivo de obtener un valor o modificarlo), se usan estas macros:
+```C
+#define matrix_get_row(matrix,i) matrix.rows[i]
+
+#define matrix_get_elem(matrix,i,j) matrix.rows[i].arr[j]
+```
+Estas macros solo requieren de la instancia y la posicion del elemento o fila en cuestion. Usar estas macros hace que el codigo sea mas legible.
+
+Ademas, se puede hacer que la matriz se convierta en una matriz RREF o una matriz REF usando las siguientes funciones:
+```C
+void make_matrix_REF(matrix_t* const restrict matrix);
+
+void make_matrix_RREF(matrix_t* const restrict matrix);
+```
+La funcion make_matrix_REF() aplica eliminacion de Gauss sobre la matriz, mientras que make_matrix_RREF() aplica eliminación de Gauss-Jordan sobre la matriz.
 
 **<a name="how_to_compile_spn">Como compilar?</a>**
 	
@@ -98,7 +153,6 @@ Coming soon, solo esperen me voy a mimir...
 		mendeleev 0.9.0
 		gcc de mingw (con el paquete de los POSIX threads instalado)
 		make
-	
 	
 	Luego, en la terminal, ejecuta el comando "make wmain.exe"
 	wmain.exe sera el programa resultante.
