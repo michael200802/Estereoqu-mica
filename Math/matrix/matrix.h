@@ -22,6 +22,4 @@ void make_matrix_REF(matrix_t* const restrict matrix);
 //But it will not make all pivots be equal to 1, it at least simplifies all rows
 void make_matrix_RREF(matrix_t* const restrict matrix);
 
-void make_elem_zero(matrix_t* const restrict matrix, size_t i, size_t j);
-
 void delete_matrix(matrix_t* const restrict matrix);
