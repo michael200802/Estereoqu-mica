@@ -107,6 +107,7 @@ bool create_matrix(matrix_t* const restrict matrix, size_t nrows, size_t ncols);
 ```
 Esta toma como argumento tres cosas: un puntero a la instancia de matrix_t, el numero de filas y el numero de columnas.
 Luego, con estos tres argumentos, crea una matriz y luego guarda esta matriz en la instancia de matrix_t.
+
 Una vez que la matriz ya no sea necesaria, se usa la siguiente funcion para liberar la memoria consumida por la matriz:
 ```C
 void delete_matrix(matrix_t* const restrict matrix);
@@ -137,13 +138,13 @@ Como se puede ver, cada instancia incializada de matrix_t alberga el numero de f
 ```
 Estas macros solo requieren de la instancia y la posicion del elemento o fila en cuestion. Usar estas macros hace que el codigo sea mas legible.
 
-Ademas, se puede hacer que la matriz se convierta en una matriz RREF o una matriz REF usando las siguientes funciones:
+Por ultimo, se puede hacer que la matriz se convierta en una matriz RREF o una matriz REF usando las siguientes funciones:
 ```C
 void make_matrix_REF(matrix_t* const restrict matrix);
 
 void make_matrix_RREF(matrix_t* const restrict matrix);
 ```
-La funcion make_matrix_REF() aplica eliminacion de Gauss sobre la matriz, mientras que make_matrix_RREF() aplica eliminación de Gauss-Jordan sobre la matriz.
+La funcion make_matrix_REF() aplica eliminacion de Gauss sobre la matriz, mientras que make_matrix_RREF() aplica eliminación de Gauss-Jordan sobre la matriz. Ambos algoritmos funcionan para matrices cuadradas y rectangulares puesto que no usan como referencia a una diagonal principal, sino que estos usan los pivotes de cada fila (si es que la fila tiene uno), es decir, ambas funciones usan los algoritmos originales (a diferencia de lo que enseñan en el cole jsjjsj). Sin embargo, make_matrix_RREF() no puede asegurar de que todos los pivotes seran iguales a uno en caso de que al dividir una fila por un escalar se cree un numero no entero, puesto que una matriz guardada en una instancia de matrix_t solo puede albergar numeros enteros. Ademas, make_matrix_REF(), tras convertir la matriz a REF, elimina las filas cuyos elementos sean todos ceros.
 
 **<a name="how_to_compile_spn">Como compilar?</a>**
 	
