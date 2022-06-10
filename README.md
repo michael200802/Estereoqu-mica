@@ -106,7 +106,7 @@ Esta estructura sirve para poder crear y guardar matrices. Entonces, para crear 
 bool create_matrix(matrix_t* const restrict matrix, size_t nrows, size_t ncols);
 ```
 Esta toma como argumento tres cosas: un puntero a la instancia de matrix_t, el numero de filas y el numero de columnas.
-Luego, con estos tres argumentos, crea una matriz y luego guarda esta matriz en la instancia de matrix_t.
+Luego, con estos tres argumentos, esta funcion crea una matriz y luego guarda esta matriz en la instancia de matrix_t.
 
 Una vez que la matriz ya no sea necesaria, se usa la siguiente funcion para liberar la memoria consumida por la matriz:
 ```C
