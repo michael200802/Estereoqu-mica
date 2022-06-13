@@ -94,6 +94,26 @@ Realmente, el proposito de estas macros es hacer facil de leer y escribir codigo
 
 ### <a name="substance_t_spn">substance_t</a>
 
+Esta estructura sirve para guardar guardar la informacion de una sustancia. Para esto se llama a la siguiente funcion:
+```C
+bool init_substance(const char * str, substance_t * const restrict sub);
+```
+Esta funcion toma como argumentos a un puntero a una cadena de caracteres y un puntero a la instancia de substance_t que sera usada para guardar la informacion de la sustancia. La cadena de caracteres debe ser la formula molecular, donde se agrupen elementos solo usando parentesis (no se reconocen los corchetes u otros simbolos), de la sustancia mas un coeficiente que indique la cantidad de moleculas que conforman la sustancia. Por ejemplo, 2C6H12O6 seria la formula de una sustancia donde hay dos moleculas de C6H12O6, es decir, glucosa. La funcion regresa false si la cadena de caracteres no era una formula valida, caso contrario, regresa true.
+
+Antes de presentar las funciones adjuntas a la estructura substance_t, debemos aclarar como se guardar una sustancia cualquiera en una instancia de substance_t al llamar a la funcion init_substance(). En primer lugar, init_substance() no usa solo una instancia de substance_t (la que es pasada como argumento) para guardar la informacion, sino que usa esta y mas; lo que pasa es que se forma un arbol o grafo donde cada elemento es una instancia de substance_t, donde el primer nodo/elemento o mejor llamado root/raiz es la instancia pasada como argumento a la funcion init_substance(). En segundo lugar, cada elemento/nodo del arbol/grafo es una sustancia por si misma, solo que estas se divididen en las sustancias que las forman. Por ejemplo, 2H2O se divide en H2O, y este ultimo se divide en H2 y O, o tambien 4Fe(OH)2 el cual se divide en Fe(OH)2, luego este ultimo se divide en Fe y en 2OH, el cual se divide en O y H. Una representacion grafica de este tipo de estructura de datos es:
+
+		5Fe4(Fe(CN)6)3
+			
+		 Fe4(Fe(CN)6)3
+		
+	Fe4			(Fe(CN)6)3
+	
+				 Fe(CN)6
+			   Fe			6CN
+					    C	     N
+
+Por ultimo, cabe aclarar que esto se diseño asi pues hace que sea muy facil obtener la sustancia expresada en la formula quimica dado que estas formulas pueden tener multiples parejas de parentesis recursivas (es decir, una dentro de la otra).
+
 
 
 ### <a name="reaction_t_spn">reaction_t</a>
@@ -136,7 +156,7 @@ Como se puede ver, cada instancia incializada de matrix_t alberga el numero de f
 
 #define matrix_get_elem(matrix,i,j) matrix.rows[i].arr[j]
 ```
-Estas macros solo requieren de la instancia y la posicion del elemento o fila en cuestion. Usar estas macros hace que el codigo sea mas legible.
+Estas macros solo requieren de la instancia de matrix_t que alberga la matriz y la posicion del elemento o fila en cuestion. Usar estas macros hace que el codigo sea mas legible.
 
 Por ultimo, se puede hacer que la matriz se convierta en una matriz RREF o una matriz REF usando las siguientes funciones:
 ```C
