@@ -100,20 +100,23 @@ bool init_substance(const char * str, substance_t * const restrict sub);
 ```
 Esta funcion toma como argumentos a un puntero a una cadena de caracteres y un puntero a la instancia de substance_t que sera usada para guardar la informacion de la sustancia. La cadena de caracteres debe ser la formula molecular, donde se agrupen elementos solo usando parentesis (no se reconocen los corchetes u otros simbolos), de la sustancia mas un coeficiente que indique la cantidad de moleculas que conforman la sustancia. Por ejemplo, 2C6H12O6 seria la formula de una sustancia donde hay dos moleculas de C6H12O6, es decir, glucosa. La funcion regresa false si la cadena de caracteres no era una formula valida, caso contrario, regresa true.
 
-Antes de presentar las funciones adjuntas a la estructura substance_t, debemos aclarar como se guardar una sustancia cualquiera en una instancia de substance_t al llamar a la funcion init_substance(). En primer lugar, init_substance() no usa solo una instancia de substance_t (la que es pasada como argumento) para guardar la informacion, sino que usa esta y mas; lo que pasa es que se forma un arbol o grafo donde cada elemento es una instancia de substance_t, donde el primer nodo/elemento o mejor llamado root/raiz es la instancia pasada como argumento a la funcion init_substance(). En segundo lugar, cada elemento/nodo del arbol/grafo es una sustancia por si misma, solo que estas se divididen en las sustancias que las forman. Por ejemplo, 2H2O se divide en H2O, y este ultimo se divide en H2 y O, o tambien 4Fe(OH)2 el cual se divide en Fe(OH)2, luego este ultimo se divide en Fe y en 2OH, el cual se divide en O y H. Una representacion grafica de este tipo de estructura de datos es:
+Antes de presentar las funciones adjuntas a la estructura substance_t, debemos aclarar como se guardar una sustancia cualquiera en una instancia de substance_t al llamar a la funcion init_substance(). En primer lugar, init_substance() no usa solo una instancia de substance_t (la que es pasada como argumento) para guardar la informacion, sino que usa esta y mas; lo que pasa es que se forma un arbol o grafo donde cada elemento es una instancia de substance_t, donde el primer nodo/elemento o mejor llamado root/raiz es la instancia pasada como argumento a la funcion init_substance(). En segundo lugar, cada elemento/nodo del arbol/grafo es una sustancia por si misma, solo que estas se divididen en las sustancias que las forman. Por ejemplo, 2H2O se divide en H2O, y este ultimo se divide en H2 y O, o tambien 4Fe(OH)2 el cual se divide en Fe(OH)2, luego este ultimo se divide en Fe y en 2OH, el cual se divide en O y H. Dos representaciones graficas de este tipo de estructura de datos son:
 
-		5Fe4(Fe(CN)6)3
-			
-		 Fe4(Fe(CN)6)3
-		
-	Fe4			(Fe(CN)6)3
-	
-				 Fe(CN)6
-			   Fe			6CN
-					    C	     N
+file:///home/MICHU_NEET/tree1.jpg![imagen](https://user-images.githubusercontent.com/69653355/173372889-844623b0-43d4-472f-8970-815c7c821814.png)
 
-Por ultimo, cabe aclarar que esto se diseño asi pues hace que sea muy facil obtener la sustancia expresada en la formula quimica dado que estas formulas pueden tener multiples parejas de parentesis recursivas (es decir, una dentro de la otra).
 
+
+file:///home/MICHU_NEET/tree2.jpg![imagen](https://user-images.githubusercontent.com/69653355/173373703-fa7ce484-ca6d-4539-8df1-010c9e1fcdb8.png)
+
+
+
+Por ultimo, cabe aclarar que esto se diseño asi pues hace que sea muy facil obtener la sustancia expresada en una formula quimica pasada como argumento a init_substance() dado que estas formulas pueden tener multiples parejas de parentesis recursivas (es decir, una dentro de la otra). 
+
+Ahora, para imprimir la formula quimica de una sustancia guardada en una instancia de substance_t, se usa la siguiente funcion:
+```C
+size_t print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len);
+```
+Esta funcion requiere tres argumentos: un puntero a la instancia de substance_t en cuestion, un puntero a un buffer (el espacio en memoria donde se imprimira), y la longitud del buffer. En cuestion, la funcion recorre el grafo/arbol de izquierda a derecha e imprime a cada elemento del grafo/arbol como si fuera una substancia en si misma (a excepcion del primer elemento/nodo o tambien llamado raiz/root). En realidad, lo que pasa es que esta funcion primero imprime el coeficiente de la sustancia y luego prosigue a llamar a la funcion \_print_substance(), funcion que toma los mismos argumentos que print_substance() y es la que se encarga de imprimir el resto de la formula. En esta primera llamada a la funcion \_print_substance() se pasa como argumento el puntero al siguiente nodo conectado a la raiz del arbol (un puntero a una instancia de substance_t). Luego, es esta funcion la que recorre el arbol de izquierda a derecha y cada vez que pasa por un elemento/sustancia del arbol hace lo siguiente: si la sustancia es un compuesto de otras sustancias y tiene un coeficiente diferente de uno, abre parentesis, prosigue a recorrer las sustancias que conforman a este compuesto y luego cierra los parentesis seguido del coeficiente de la sustancia; y si el la sustancia es solo conformada por un solo elemento, es decir, no es un compuesto de otras sustancias, se imprime el simbolo del elemento seguido del coefciente. 
 
 
 ### <a name="reaction_t_spn">reaction_t</a>
