@@ -258,7 +258,7 @@ Para balancear a: CO2 + H2O --> C6H12O6 + O2
 		H:  0a + 2b - 12c + 0d = 0 
 		C:  1a + 0b - 6c + 0d = 0 
 		O:  2a + 1b - 6c - 2d = 0 
-			1a + 0b + 0c + 0d = 1
+		    1a + 0b + 0c + 0d = 1
 	
 	3. Luego se usa Gauss-Jordan para simplificar a la matriz:
 	
@@ -270,7 +270,10 @@ Para balancear a: CO2 + H2O --> C6H12O6 + O2
 	
 		0 0 0 1 1
 
-	4. En este caso, como uno de los elementos de la diagonal principal no es 1, se multiplica a toda la ultima columna (la que corresponde a los terminos independientes de cada ecuacion) el minimo comun multiplo entre el termino independiente y el termino diferente de 1 de la fila 3, al ultimo elemento de la fila se le divide por el elemento diferente de 1 y luego se se hace a este numero diferente de uno ser igual a 1.
+	4. En este caso, como uno de los elementos de la diagonal principal no es 1, se multiplica a toda la ultima columna 
+	(la que corresponde a los terminos independientes de cada ecuacion) el minimo comun multiplo entre el termino independiente 
+	y el termino diferente de 1 de la fila 3, al ultimo elemento de la fila se le divide por el elemento diferente de 1 
+	y luego se se hace a este numero diferente de uno ser igual a 1.
 
 		1 0 0 0 6
 	
