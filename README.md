@@ -27,9 +27,9 @@ Hay 4 estructuras vitales para la logica del programa:
 
 [substance_t](#substance_t_spn)
 
-[reaction_t](#reaction_t_spn)
-
 [matrix_t](#matrix_t_spn)
+
+[reaction_t](#reaction_t_spn)
 
 Con las instancias de estas estructuras, podemos guardar informacion de:
 
@@ -121,7 +121,7 @@ Por otro lado, para imprimir la formula quimica de una sustancia guardada en una
 ```C
 size_t print_substance(const substance_t * const restrict sub, char * buffer, size_t buffer_len);
 ```
-Esta funcion requiere tres argumentos: un puntero a la instancia de substance_t en cuestion, un puntero a un buffer (el espacio en memoria donde se imprimira), y la longitud del buffer. En cuestion, la funcion recorre el grafo/arbol de izquierda a derecha e imprime a cada elemento del grafo/arbol como si fuera una substancia en si misma (a excepcion del primer elemento/nodo o tambien llamado raiz/root). En realidad, lo que pasa es que esta funcion primero imprime el coeficiente de la sustancia y luego prosigue a llamar a la funcion \_print_substance(), funcion que toma los mismos argumentos que print_substance() y es la que se encarga de imprimir el resto de la formula. En esta primera llamada a la funcion \_print_substance() se le pasa como argumento el puntero al siguiente nodo conectado a la raiz del arbol (un puntero a una instancia de substance_t). Luego, es esta funcion la que recorre el arbol de izquierda a derecha y cada vez que pasa por un elemento/sustancia del arbol hace lo siguiente: si la sustancia es un compuesto de otras sustancias (sustancia compleja) y tiene un coeficiente diferente de uno, abre parentesis, prosigue a recorrer las sustancias que conforman a este compuesto (mediante recursividad, es decir, de la misma manera que usa destroy_substance()) y luego cierra los parentesis seguido del coeficiente de la sustancia; y si la sustancia es solo conformada por un solo elemento (sustancia simple), es decir, no es un compuesto de otras sustancias, se imprime el simbolo del elemento seguido del coefciente. 
+Esta funcion requiere tres argumentos: un puntero a la instancia de substance_t en cuestion, un puntero a un buffer (el espacio en memoria donde se imprimira), y la longitud del buffer. En cuestion, la funcion recorre el grafo/arbol de izquierda a derecha e imprime a cada elemento del grafo/arbol como si fuera una substancia en si misma (a excepcion del primer elemento/nodo o tambien llamado raiz/root). En realidad, lo que pasa es que esta funcion primero imprime el coeficiente de la sustancia y luego prosigue a llamar a la funcion \_print_substance(), funcion que toma los mismos argumentos que print_substance() y es la que se encarga de imprimir el resto de la formula. En esta primera llamada a la funcion \_print_substance() se le pasa como argumento el puntero al siguiente nodo conectado a la raiz del arbol (un puntero a una instancia de substance_t). Luego, es esta funcion la que recorre el arbol de izquierda a derecha y cada vez que pasa por un elemento/sustancia del arbol hace lo siguiente: si la sustancia es un compuesto de otras sustancias (sustancia compleja) y tiene un coeficiente diferente de uno, abre parentesis, prosigue a recorrer las sustancias que conforman a este compuesto (mediante recursividad, es decir, de la misma manera que usa destroy_substance()) y luego cierra los parentesis seguido del coeficiente de la sustancia; y si la sustancia es solo conformada por un solo elemento (sustancia simple), es decir, no es un compuesto de otras sustancias, se imprime el simbolo del elemento (el cual se obtiene mediante una llamada a elem_get_symbol()) seguido del coefciente. 
 
 Ademas, es posible obtener la cantidad de atomos de cada elemento quimico en una sustancia guardada en una instancia de substance_t (si el elemento quimico no esta presente, la cantidad seria cero). Para esto se usan dos cosas:
 ```C
@@ -138,7 +138,7 @@ Esta funcion toma como argumentos dos cosas: la direccion de memoria o puntero a
 ```C
 void _get_components_of_substance(const substance_t * const restrict sub, components_of_substance_t * const restrict comp, size_t multiplier)
 ```
-A diferencia de la primera funcion, esta funcion toma un tercer argumento, un multiplicador. Cuando la funcion get_components_of_substance() es llamada, la funcion hace que los contadores de la instancia de components_of_substance_t sean iniciados en cero y luego esta funcion/rutina instanteaneamente llama a \_get_components_of_substance(), pasandole sus mismos argumentos (el puntero a la instancia de substance_t y el puntero a la instancia de components_of_substance_t) y pasa a 1 como el multiplicador. Cuando la funcion \_get_components_of_substance() es llamada, esta luego se llama a si misma varias veces usando como argumento a cada una de las sustancias que componen a la sustancia actual, pero eso si, se pasa el mismo puntero a una instancia de components_of_substance_t y el multplicador pasado como argumento es el producto del multiplicador actual por el coeficiente de la sustancia actual; sin embargo, en el caso de que la sustancia sea conformada por un solo elemento (es decir, no se ramifique en otras sustancias, lo que se llama sustancia simple en quimica), lo que se hace es usar el numero atomico del elemento en cuestion para acceder a una posicion valida en el arreglo de numeros enteros albergado en la instancia de components_of_substance_t (si, lo que se usa para guardar las cantidades, no es mas que un arreglo de numeros enteros sin signo donde cada uno corresponde a un alemento en cuestion) y luego al contador en la posicion obtenida se le suma la cantidad de atomos del elemento en la sustancia en cuestion multiplicada por el multiplicador pasado como argumento. 
+A diferencia de la primera funcion, esta funcion toma un tercer argumento, un multiplicador. Cuando la funcion get_components_of_substance() es llamada, la funcion hace que los contadores de la instancia de components_of_substance_t sean iniciados en cero y luego esta funcion/rutina instanteaneamente llama a \_get_components_of_substance(), pasandole sus mismos argumentos (el puntero a la instancia de substance_t y el puntero a la instancia de components_of_substance_t) y pasa a 1 como el multiplicador. Cuando la funcion \_get_components_of_substance() es llamada, esta luego se llama a si misma varias veces usando como argumento a cada una de las sustancias que componen a la sustancia actual, pero eso si, se pasa el mismo puntero a una instancia de components_of_substance_t y el multplicador pasado como argumento es el producto del multiplicador actual por el coeficiente de la sustancia actual; sin embargo, en el caso de que la sustancia sea conformada por un solo elemento (es decir, no se ramifique en otras sustancias, lo que se llama sustancia simple en quimica), lo que se hace es usar el numero atomico del elemento en cuestion (se llama a la macro elem_get_atomicnum() usando como argumento a la instancia de elem_t guardada en la instancia de substance_t) para acceder a una posicion valida en el arreglo de numeros enteros albergado en la instancia de components_of_substance_t (si, lo que se usa para guardar las cantidades, no es mas que un arreglo de numeros enteros sin signo donde cada uno es un contador que corresponde a un alemento en cuestion) y luego al contador en la posicion obtenida se le suma la cantidad de atomos del elemento en la sustancia (el coeficiente o cantidad de moleculas) en cuestion multiplicada por el multiplicador pasado como argumento. 
 
 Luego se pueden hacer otras operaciones con la instancia de components_of_substance_t, usando a las siguientes funciones:
 ```C
@@ -148,7 +148,7 @@ void sum_components_of_substance(
 	const components_of_substance_t * const comp1, const components_of_substance_t * const comp2, components_of_substance_t * const result
 	);
 ```
-La primera funcion, compare_components_of_substance(), compara a dos instancias de components_of_substance_t, requieriendo como argumentos a las direcciones de memoria o punteros de cada instancia. Mientras que la segunda funcion, sum_components_of_substance(), toma dos instancias de components_of_substance_t, las suma y guarda el resultado de la suma en una tercera instancia de components_of_substance_t, requieriendo esta vez los punteros de las tres instancias.
+La primera funcion, compare_components_of_substance(), compara a dos instancias de components_of_substance_t, requieriendo como argumentos a las direcciones de memoria o punteros de cada instancia, y devuelve el valor booleano false si no son iguales o true si son iguales. Mientras que la segunda funcion, sum_components_of_substance(), toma dos instancias de components_of_substance_t, las suma y guarda el resultado de la suma en una tercera instancia de components_of_substance_t, requieriendo esta vez los punteros de las tres instancias.
 Por ultimo, hay una funcion que obtiene el numero de equivalente quimico de una sustancia que usa a la funcion get_components_of_substance():
 ```C
 num_t get_equivalent_number_of_substance(const substance_t * restrict const sub);
@@ -158,8 +158,6 @@ Esta funcion solo requiere un argumento: un puntero a una instancia de substance
 La recursividad usada aqui puede ser ejemplificada con un programa que se ejecuta a si mismo otra vez. Es decir, un programa que se esta ejecutando (una funcion que ha sido llamada y aun no termina su ejecucion) crea otra instancia del mismo (la funcion llama/ejecuta otra vez a si misma pero con diferentes argumentos), como cuando presionamos dos veces al icono del navegador y nos salen dos pestañas de este navegador, luego la instancia original del programa hace que la otra instancia cumpla una tarea dadas ciertas indicaciones (los argumentos de la funcion) y, por ultimo, se cierra la segunda instancia del programa una vez que la tarea se cumple y el programa original puede seguir trabajando en lo que estaba (la funcion llamada termino y la funcion original, la que llamo a la segunda, sigue con lo que estaba haciendo). Ademas, cabe recalcar que la segunda instancia puede que cree otra instancia del mismo programa para cumplir con su tarea. 
 
 La recursividad no ha sido usada por mero capricho de mi, el Michu; en realidad, dado que los arboles o grafos son estructuras de datos recursivas, la recursividad es la mejor forma de recorrer y trabajar con estas. 
-
-### <a name="reaction_t_spn">reaction_t</a>
 
 ### <a name="matrix_t_spn">matrix_t</a>
 
@@ -208,6 +206,32 @@ void make_matrix_REF(matrix_t* const restrict matrix);
 void make_matrix_RREF(matrix_t* const restrict matrix);
 ```
 La funcion make_matrix_REF() aplica eliminacion de Gauss sobre la matriz, mientras que make_matrix_RREF() aplica eliminación de Gauss-Jordan sobre la matriz. Ambos algoritmos funcionan para matrices cuadradas y rectangulares puesto que no usan como referencia a una diagonal principal, sino que estos usan los pivotes de cada fila (si es que la fila tiene uno), es decir, ambas funciones usan los algoritmos originales (a diferencia de lo que enseñan en el cole jsjjsj). Sin embargo, make_matrix_RREF() no puede asegurar de que todos los pivotes seran iguales a uno en caso de que al dividir una fila por un escalar se cree un numero no entero, puesto que una matriz guardada en una instancia de matrix_t solo puede albergar numeros enteros. Ademas, make_matrix_REF(), tras convertir la matriz a REF, elimina las filas cuyos elementos sean todos ceros.
+
+### <a name="reaction_t_spn">reaction_t</a>
+
+Las instancias de esta estructura se encargan de guardar a reacciones quimicas (expresadas como ecuacion quimica). Para esto poder guardar una reaccion quimica en una instancia de reaction_t hay dos funciones: 
+```C
+reaction_err_t init_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react, bool balance);
+
+reaction_err_t init_balanced_reaction(const char * restrict _reactants, const char * restrict _products, reaction_t * restrict const react);
+```
+Ambas funciones requieren tres argumentos: un puntero a una cadena de caracteres donde este la parte de la ecuacion quimica de los reactivos, un puntero a la cadena de caracteres donde este la parte de la ecuacion de los productos y un puntero a una instancia de reaction_t donde se guardara la reaccion quimica. Sin embargo, la segunda funcion, init_reaction(), requiere un cuarto argumento: un valor booleano (false/falso o true/verdadero) que indique si se debe balancear la ecuacion quimica o, caso contrario, fallar si la ecuacion no esta balanceada. Para guardar a la ecuacion quimica se crean dos arreglos de instancias de substance_t, la primera para los reactivos y la segunda para los productos, y en cada de esas instancias se guarda a cada reactivo/producto (que son sustancias) llamando a la funcion init_substance(), a la cual se le pasa como argumento a la formula quimica correspondiente a la sustancia que es encontrada en una de las cadenas de caracteres pasadas como argumentos. 
+
+Estas funciones al ser llamadas pueden devolver uno de los siguientes valores:
+
+	REACTION_ERR_INIT_UNKNOWN_SYMBOL (0)
+		Indica que hay un simbolo desconocido o un error en la sintaxis.
+
+	REACTION_ERR_INIT_SUCCESS (1)
+		Indica que la operacion fue exitosa.
+
+	REACTION_ERR_INIT_UNBALANCED (2)
+		Se fallo pues la ecuacion quimica no esta balanceada y no se nos ha indicado que se balancee.
+
+	REACTION_ERR_INIT_CANNOT_BALANCE (3)
+		Se trato de balancear pero es imposible.
+
+Para balancear se usa el metodo de balanceo de ecuaciones quimicas llamado metodo algebraico para crear un sistema de ecuaciones y luego se resuelve este sistema mediante Gauss-Jordan. El sistema de ecuaciones se expresa como una matriz que es guardada en una instancia de matrix_t, que es creada mediante una llamada a create_matrix() a la cual se le pasa como numero de filas (el numero de ecuaciones) el numero de diferentes elementos que actuan en la reaccion quimica mas 1 y como numero de columnas (numero de variables) a el numero de reactivos mas el numero de productos. Para obtener al numero de filas se recorren ambos arreglos de instancias de substance_t para se obtiener la cantidad de atomos de cada elemento quimico usando a la funcion get_components_of_substance() y luego sumar el resultado a otra instancia de components_of_substance_t usando a la funcion de sum_components_of_substance() para asi al final que obtener el total guardado en una instancia de components_of_substance_t, asi luego simplemente contar la cantidad de contadores que son diferentes de cero y asi obtener el numero de elementos que participan en la reaccion. Por otro lado, el numero de reactivos y el numero de productos se obtienen directamente dentro en la misma instancia de reaction_t que ya ha sido inicializada por una de las dos funciones ya mencionadas. Entonces, una vez que tenemos la matriz hecha, lo siguiente es rellenarla y para eso se va recorriendo otra vez los arreglos de instancias de substance_t (como se hizo previamente para obtener el numero de filas) y se va obteniendo la cantidad de atomos de cada elemento en cada reactivo/producto usando a la funcion get_components_of_substance(), luego con los valores albergados en la instancia de components_of_substance_t donde se guardaron las cantidades de atomos de cada elemento se rellena la columna correspondiente al reactivo o producto en cuestion pero sin tocar a la ultima fila (no solo porque esta no corresponde a una ecuacion de uno de los elementos, tambien porque con esta podremos romper la simetria de la matriz). Posteriormente, al primer elemento de la ultima fila (que estaria en la primera columna) se le hace uno (lo cual le hace el unico elemento diferente de cero en la fila) y luego se hace uno al elemento ultimo de la ultima fila (el elemento estaria en la ultima columna).
 
 **<a name="how_to_compile_spn">Como compilar?</a>**
 	
