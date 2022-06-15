@@ -231,7 +231,51 @@ Estas funciones al ser llamadas pueden devolver uno de los siguientes valores:
 	REACTION_ERR_INIT_CANNOT_BALANCE (3)
 		Se trato de balancear pero es imposible.
 
-Para balancear se usa el metodo de balanceo de ecuaciones quimicas llamado metodo algebraico para crear un sistema de ecuaciones y luego se resuelve este sistema mediante Gauss-Jordan. El sistema de ecuaciones se expresa como una matriz que es guardada en una instancia de matrix_t, que es creada mediante una llamada a create_matrix() a la cual se le pasa como numero de filas (el numero de ecuaciones) el numero de diferentes elementos que actuan en la reaccion quimica mas 1 y como numero de columnas (numero de variables) a el numero de reactivos mas el numero de productos. Para obtener al numero de filas se recorren ambos arreglos de instancias de substance_t para se obtiener la cantidad de atomos de cada elemento quimico usando a la funcion get_components_of_substance() y luego sumar el resultado a otra instancia de components_of_substance_t usando a la funcion de sum_components_of_substance() para asi al final que obtener el total guardado en una instancia de components_of_substance_t, asi luego simplemente contar la cantidad de contadores que son diferentes de cero y asi obtener el numero de elementos que participan en la reaccion. Por otro lado, el numero de reactivos y el numero de productos se obtienen directamente dentro en la misma instancia de reaction_t que ya ha sido inicializada por una de las dos funciones ya mencionadas. Entonces, una vez que tenemos la matriz hecha, lo siguiente es rellenarla y para eso se va recorriendo otra vez los arreglos de instancias de substance_t (como se hizo previamente para obtener el numero de filas) y se va obteniendo la cantidad de atomos de cada elemento en cada reactivo/producto usando a la funcion get_components_of_substance(), luego con los valores albergados en la instancia de components_of_substance_t donde se guardaron las cantidades de atomos de cada elemento se rellena la columna correspondiente al reactivo o producto en cuestion pero sin tocar a la ultima fila (no solo porque esta no corresponde a una ecuacion de uno de los elementos, tambien porque con esta podremos romper la simetria de la matriz). Posteriormente, al primer elemento de la ultima fila (que estaria en la primera columna) se le hace uno (lo cual le hace el unico elemento diferente de cero en la fila) y luego se hace uno al elemento ultimo de la ultima fila (el elemento estaria en la ultima columna).
+Para balancear se usa el metodo de balanceo de ecuaciones quimicas llamado metodo algebraico para crear un sistema de ecuaciones y luego se resuelve este sistema mediante Gauss-Jordan. El sistema de ecuaciones se expresa como una matriz que es guardada en una instancia de matrix_t, que es creada mediante una llamada a create_matrix() a la cual se le pasa como numero de filas (el numero de ecuaciones) el numero de diferentes elementos que actuan en la reaccion quimica mas 1 y como numero de columnas (numero de variables) a el numero de reactivos mas el numero de productos. Para obtener al numero de filas se recorren ambos arreglos de instancias de substance_t para se obtiener la cantidad de atomos de cada elemento quimico usando a la funcion get_components_of_substance() y luego sumar el resultado a otra instancia de components_of_substance_t usando a la funcion de sum_components_of_substance() para asi al final que obtener el total guardado en una instancia de components_of_substance_t, asi luego simplemente contar la cantidad de contadores que son diferentes de cero y asi obtener el numero de elementos que participan en la reaccion. Por otro lado, el numero de reactivos y el numero de productos se obtienen directamente dentro en la misma instancia de reaction_t que ya ha sido inicializada por una de las dos funciones ya mencionadas. Entonces, una vez que tenemos la matriz hecha, lo siguiente es rellenarla y para eso se va recorriendo otra vez los arreglos de instancias de substance_t (como se hizo previamente para obtener el numero de filas) y se va obteniendo la cantidad de atomos de cada elemento en cada reactivo/producto usando a la funcion get_components_of_substance(), pero previamente haciendo que el coeficiente de la sustancia sea uno, luego con los valores albergados en la instancia de components_of_substance_t donde se han guardado las cantidades de atomos de cada elemento se rellena la columna correspondiente al reactivo o producto en cuestion pero sin tocar a la ultima fila (no solo porque esta no corresponde a una ecuacion de uno de los elementos, tambien porque con esta podremos romper la simetria de la matriz), ademas, si se trata de un reactivo, el numero ingresado en la matriz debe ser multiplicado por -1. Posteriormente, al primer elemento de la ultima fila (que estaria en la primera columna) se le hace uno (lo cual le hace el unico elemento diferente de cero en la fila) y luego se hace uno al elemento ultimo de la ultima fila (el elemento estaria en la ultima columna). Una vez que la matriz ha sido rellenada, se llama a la funcion make_matrix_RREF() para convertir a la matriz en una matriz RREF (basicamente Gauss-Jordan) y asi se obtienen
+
+Por ejemplo, para balancear a: CO2 + H2O --> C6H12O6 + O2
+	
+	1. Primero se forma la matriz:
+	
+		0 0 0 0 0
+
+		0 0 0 0 0
+		
+		0 0 0 0 0
+	
+	2. Luego se rellena la matriz.
+	
+		0 2 -12  0 0
+	
+		1 0  -6  0 0
+	
+		2 1  -6 -2 0
+	
+		1 0   0  0 1
+	
+	3. Luego se usa Gauss-Jordan para simplificar a la matriz:
+	
+		1 0 0 0 1
+	
+		0 1 0 0 1
+	
+		0 0 6 0 1
+	
+		0 0 0 1 1
+
+	4. En este caso, como uno de los elementos de la diagonal principal no es 1, se multiplica a toda la ultima columna (la que corresponde a los terminos independientes de cada ecuacion) el minimo comun multiplo entre el termino independiente y el termino diferente de 1 de la fila 3 y luego se se hace a este termino diferente de uno ser igual a 1.
+
+		1 0 0 0 6
+	
+		0 1 0 0 6
+	
+		0 0 1 0 1
+	
+		0 0 0 1 6
+
+	5. Recorriendo a cada ecuacion/fila se sacan los nuevos coeficientes.
+
+	6CO2 + 6H2O ---> C6H12O6 + 6O2
 
 **<a name="how_to_compile_spn">Como compilar?</a>**
 	
