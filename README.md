@@ -98,9 +98,9 @@ Esta estructura sirve para guardar guardar la informacion de una sustancia. Para
 ```C
 bool init_substance(const char * str, substance_t * const restrict sub);
 ```
-Esta funcion toma como argumentos a un puntero a una cadena de caracteres y un puntero a la instancia de substance_t que sera usada para guardar la informacion de la sustancia. La cadena de caracteres debe ser la formula molecular, donde se agrupen elementos solo usando parentesis (no se reconocen los corchetes u otros simbolos), de la sustancia mas un coeficiente que indique la cantidad de moleculas que conforman la sustancia. Por ejemplo, 2C6H12O6 seria la formula de una sustancia donde hay dos moleculas de C6H12O6, es decir, glucosa. La funcion regresa false si la cadena de caracteres no era una formula valida, caso contrario, regresa true.
+Esta funcion toma como argumentos a un puntero a una cadena de caracteres y un puntero a la instancia de substance_t que sera usada para guardar la informacion de la sustancia. La cadena de caracteres debe ser la formula molecular, donde se agrupen elementos solo usando parentesis (no se reconocen los corchetes u otros simbolos) mas un coeficiente que indique la cantidad de moleculas que conforman la sustancia. Por ejemplo, 2C6H12O6 seria la formula de una sustancia donde hay dos moleculas de C6H12O6, es decir, glucosa. La funcion regresa false si la cadena de caracteres no era una formula valida, caso contrario, regresa true.
 
-Antes de presentar las funciones adjuntas a la estructura substance_t, debemos aclarar como se guardar una sustancia cualquiera en una instancia de substance_t al llamar a la funcion init_substance(). En primer lugar, init_substance() no usa solo una instancia de substance_t (la que es pasada como argumento) para guardar la informacion, sino que usa esta y mas; lo que pasa es que se forma un arbol o grafo donde cada elemento es una instancia de substance_t, donde el primer nodo/elemento o mejor llamado root/raiz es la instancia pasada como argumento a la funcion init_substance(). En segundo lugar, cada elemento/nodo del arbol/grafo es una sustancia por si misma, solo que estas se divididen en las sustancias que las forman. Por ejemplo, 2H2O se divide en H2O, y este ultimo se divide en H2 y O, o tambien 4Fe(OH)2 el cual se divide en Fe(OH)2, luego este ultimo se divide en Fe y en 2OH, el cual se divide en O y H. Dos representaciones graficas de este tipo de estructura de datos son:
+Antes de presentar las funciones adjuntas a la estructura substance_t, debemos aclarar como se guardar una sustancia cualquiera en una instancia de substance_t al llamar a la funcion init_substance(). En primer lugar, init_substance() no usa solo una instancia de substance_t (la que es pasada como argumento) para guardar la informacion, sino que usa esta y mas; lo que pasa es que se forma un arbol o grafo donde cada elemento es una instancia de substance_t, donde el primer nodo/elemento o mejor llamado root/raiz es la instancia pasada como argumento a la funcion init_substance(). En segundo lugar, cada elemento/nodo del arbol/grafo es una sustancia por si misma, solo que estas se divididen en las sustancias que las forman. Por ejemplo, 2H2O se divide en H2O, y este ultimo se divide en 2H y O, o tambien 4Fe(OH)2 el cual se divide en Fe(OH)2, luego este ultimo se divide en Fe y en 2OH, el cual se divide en O y H. Dos representaciones graficas de este tipo de estructura de datos son:
 
 file:///home/MICHU_NEET/tree1.jpg![imagen](https://user-images.githubusercontent.com/69653355/173372889-844623b0-43d4-472f-8970-815c7c821814.png)
 
@@ -109,7 +109,7 @@ file:///home/MICHU_NEET/tree1.jpg![imagen](https://user-images.githubusercontent
 file:///home/MICHU_NEET/tree2.jpg![imagen](https://user-images.githubusercontent.com/69653355/173373703-fa7ce484-ca6d-4539-8df1-010c9e1fcdb8.png)
 
 
-Todos los nodos/elementos del arbol tienen siempre estos tres datos: su cantidad de moleculas o tambien llamado coeficiente, su masa molar y un valor booleano (false/falso o true/verdadero) que indica si el elemento/nodo solo esta conformada por un unico elemento quimico, una sustancia simple, o es una sustancia compuesta por otras sustancias, una sustancia compleja; dependiendo de si el valor es verdadero o falso un cuarto dato es: si la sustancia es simple (el valor es verdadero/true), el cuarto dato es una instancia de elem_t, que guarda la informacion del elemento quimico en cuestion, caso contrario, el cuarto dato es un puntero que apunta al arreglo que alberga a las sustancias/elementos/nodos que conforman a la sustancia en cuestion. Por ultimo, cabe aclarar que esto se diseño asi pues hace que sea muy facil obtener la sustancia expresada en una formula quimica pasada como argumento a init_substance() dado que estas formulas pueden tener multiples parejas de parentesis recursivas (es decir, una dentro de la otra). 
+Todos los nodos/elementos del arbol tienen siempre estos tres datos: su cantidad de moleculas o tambien llamado coeficiente, su masa molar y un valor booleano (false/falso o true/verdadero) que indica si el elemento/nodo solo esta conformado por un unico elemento quimico, una sustancia simple, o es una sustancia compuesta por otras sustancias, una sustancia compleja; dependiendo de si el valor es verdadero o falso un cuarto dato es: si la sustancia es simple (el valor es verdadero/true), el cuarto dato es una instancia de elem_t, que guarda la informacion del elemento quimico en cuestion, caso contrario, el cuarto dato es un puntero que apunta al arreglo que alberga a las sustancias/elementos/nodos que conforman a la sustancia en cuestion. Por ultimo, cabe aclarar que esto se diseño asi pues hace que sea muy facil obtener la sustancia expresada en una formula quimica pasada como argumento a init_substance() dado que estas formulas pueden tener multiples parejas de parentesis recursivas (es decir, una dentro de la otra). 
 
 Lo mencionado explica porque se reserva mucha memoria para guardar una sustancia en substance_t. Por eso es de vital importancia la funcion:
 ```C
@@ -258,7 +258,7 @@ Para balancear a: CO2 + H2O --> C6H12O6 + O2
 		H:  0a + 2b - 12c + 0d = 0 
 		C:  1a + 0b - 6c + 0d = 0 
 		O:  2a + 1b - 6c - 2d = 0 
-			1a + 0b + 0c + 0d = 1
+		    1a + 0b + 0c + 0d = 1
 	
 	3. Luego se usa Gauss-Jordan para simplificar a la matriz:
 	
@@ -270,7 +270,10 @@ Para balancear a: CO2 + H2O --> C6H12O6 + O2
 	
 		0 0 0 1 1
 
-	4. En este caso, como uno de los elementos de la diagonal principal no es 1, se multiplica a toda la ultima columna (la que corresponde a los terminos independientes de cada ecuacion) el minimo comun multiplo entre el termino independiente y el termino diferente de 1 de la fila 3, al ultimo elemento de la fila se le divide por el elemento diferente de 1 y luego se se hace a este numero diferente de uno ser igual a 1.
+	4. En este caso, como uno de los elementos de la diagonal principal no es 1, se multiplica a toda la ultima columna 
+	(la que corresponde a los terminos independientes de cada ecuacion) el minimo comun multiplo entre el termino independiente 
+	y el termino diferente de 1 de la fila 3, al ultimo elemento de la fila se le divide por el elemento diferente de 1 
+	y luego se se hace a este numero diferente de uno ser igual a 1.
 
 		1 0 0 0 6
 	
